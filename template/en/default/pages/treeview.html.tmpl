@@ -47,6 +47,7 @@
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
 <!--<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>-->
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
+<script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js"></script>
 
 
   <script>
@@ -83,6 +84,26 @@
   </script>
 
 <style type="text/css">
+        ol.tree {
+            padding-left: 0em;
+            margin-left: 1em;
+            display: block;
+        }
+
+        ol.tree li a.b {
+            padding-left: 30px;
+            margin-right: -14px;
+            text-decoration: none;
+        }
+
+        ol.tree a.tree_link img {
+            border: 0;
+        }
+
+        ol.tree ol {
+            padding-top: 3px;
+            display: block;
+        }
         ol.tree li a.b_open {
             background: url("skins/standard/dependency-tree/tree-open.png") center no-repeat;
             cursor: pointer;
@@ -212,7 +233,7 @@
 [% BLOCK bullet %]
   [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
     [% extra_class = " b_open" %]
-    [% extra_args = 'onclick="return doToggle(this, event)"' %] 
+    [% extra_args = 'onclick="return doToggle_with_ol($(this).parent().get(0), event)"' %] 
   [% END %]
   <a name="b[% bugid %]" 
      class="b [%+ extra_class FILTER none %]"
