@@ -23,3 +23,25 @@ function doToggle_with_ol(node, event) {
     return false;
 }
 
+// save
+$('#save_tree').click(function(e)
+{
+    arraied = $('ol.sortable').nestedSortable('toArray', {startDepthCount: 0});
+    //alert('puuhp');
+
+    $.post('page.cgi?id=treeview_ajax.html',
+        {
+            tree: JSON.stringify(arraied),
+        },
+        function () { alert('saved'); },
+        'json');
+
+//        schema: schema,
+//        action: 'set',
+//        obj_id: obj_id,
+//        data: JSON.stringify(data_lists)
+//    arraied = dump(arraied);
+//    (typeof($('#toArrayOutput')[0].textContent) != 'undefined') ?
+//    $('#toArrayOutput')[0].textContent = arraied : $('#toArrayOutput')[0].innerText = arraied;
+});
+

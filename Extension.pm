@@ -46,6 +46,10 @@ sub page_before_template {
     if ($page eq 'treeview.html') {
         show_tree_view($vars);
     }
+    if ($page eq 'treeview_ajax.html') {
+        ajax_tree_view($vars);
+    }
+
 }
 
 __PACKAGE__->NAME;

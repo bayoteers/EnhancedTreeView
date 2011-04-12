@@ -27,6 +27,7 @@ use List::Util qw(max);
 
 our @EXPORT = qw(
   show_tree_view
+  ajax_tree_view
 
   );
 
@@ -93,29 +94,148 @@ sub show_tree_view {
     my ($vars) = @_;
     my $cgi = Bugzilla->cgi;
 
-    my $bug = Bugzilla::Bug->check(scalar $cgi->param('bug_id'));
-    my $id  = $bug->id;
+    my @bug_ids = split(/[,]/, $cgi->param('bug_id'));
 
-    my $dependson_tree = { $id => $bug };
-    my $dependson_ids = {};
+    $vars->{'bugs_data'} = [];
 
-    GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
-    $vars->{'dependson_tree'} = $dependson_tree;
-    $vars->{'dependson_ids'}  = [ keys(%$dependson_ids) ];
+    foreach my $bug_id (@bug_ids)
+    {
+        my $bug = Bugzilla::Bug->check($bug_id);
+        #my $bug = Bugzilla::Bug->check(scalar $cgi->param('bug_id'));
+        my $id  = $bug->id;
 
-    my $blocked_tree = { $id => $bug };
-    my $blocked_ids = {};
-    GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
-    $vars->{'blocked_tree'} = $blocked_tree;
-    $vars->{'blocked_ids'}  = [ keys(%$blocked_ids) ];
+        my $dependson_tree = { $id => $bug };
+        my $dependson_ids = {};
 
-    $vars->{'realdepth'} = $realdepth;
+        my %bug_data = ();
 
-    $vars->{'bugid'}         = $id;
-    $vars->{'maxdepth'}      = $maxdepth;
-    $vars->{'hide_resolved'} = $hide_resolved;
+        GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
+        $bug_data{'dependson_tree'} = $dependson_tree;
+        $bug_data{'dependson_ids'}  = [ keys(%$dependson_ids) ];
+
+        open (MYFILE, '>>/tmp/bz.txt');
+        print MYFILE "dep @{$bug_data{'dependson_ids'}} \n";
+
+        my $blocked_tree = { $id => $bug };
+        my $blocked_ids = {};
+        GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
+        $bug_data{'blocked_tree'} = $blocked_tree;
+        $bug_data{'blocked_ids'}  = [ keys(%$blocked_ids) ];
+
+        $bug_data{'realdepth'} = $realdepth;
+
+        $bug_data{'bugid'}         = $id;
+        $bug_data{'maxdepth'}      = $maxdepth;
+        $bug_data{'hide_resolved'} = $hide_resolved;
+
+        use Storable qw(dclone);
+
+        #my %tmp = dclone(%bug_data);
+        #push (@{$vars->{'bugs_data'}}, \${bug_data} );
+        push (@{$vars->{'bugs_data'}}, dclone(\%bug_data) );
+        print MYFILE "dep2 @{$vars->{'bugs_data'}[0]{'dependson_ids'}} \n";
+
+        #$vars->{'counter'} = sub { return (@_ + 1) };
+    }
+
 
 }
+
+sub ajax_tree_view {
+    my ($vars) = @_;
+
+    use JSON;
+
+    my $cgi    = Bugzilla->cgi;
+    my $json = new JSON::XS;
+
+    my $data = $cgi->param('tree');
+
+    if ($data =~ /(.*)/) {
+        $data = $1;    # $data now untainted
+    }
+    my $content = $json->allow_nonref->utf8->relaxed->decode($data);
+
+    # bug id => (depends, blocks)
+    my %rel_data = ();
+    my %depends = ();
+open (MYFILE, '>>/tmp/data.txt');
+    # collect all dependecies for a bug
+    for my $bug_data (@{$content})
+    {
+        #print MYFILE "id: ".$bug_data->{'item_id'}." parent: ".$bug_data->{'parent_id'}."\n";
+        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0' and $bug_data->{'parent_id'} ne 'root' and $bug_data->{'parent_id'} ne '0')
+        {
+            #print MYFILE "id: ".$bug_data->{'item_id'}." ".$bug_data->{'parent_id'}." \n";
+            my $found = 0;
+            foreach my $bid (keys %rel_data)
+            {
+                # depends on
+                if($bid eq $bug_data->{'item_id'}) {
+                    $found = 1;
+                    push(@{$rel_data{ $bug_data->{'item_id'} }[1]}, $bug_data->{'parent_id'});
+                    last;
+                }
+            }
+            if (not $found)
+            {
+                @{$rel_data{ $bug_data->{'item_id'} }} = ([], [$bug_data->{'parent_id'}]);
+                #@{$rel_data{ $bug_data->{'item_id'} }} = (, ($bug_data->{'parent_id'}));
+            }
+
+            $found = 0;
+            foreach my $bid (keys %rel_data)
+            {
+                # blocks on
+                if($bid eq $bug_data->{'parent_id'}) {
+                    $found = 1;
+                    print MYFILE "FOO @{$rel_data{ $bug_data->{'parent_id'} }[0]}\n";
+                    push(@{$rel_data{ $bug_data->{'parent_id'} }[0]}, $bug_data->{'item_id'});
+                    last;
+                }
+            }
+            if (not $found)
+            {
+                @{$rel_data{ $bug_data->{'parent_id'} }} = ([$bug_data->{'item_id'}], []);
+            }
+        }
+    }
+
+#    my $dbh = Bugzilla->dbh;
+#
+#    $dbh->bz_start_transaction();
+
+    for my $bid ( keys %rel_data ) {
+        my (@blocks, @depends) = @{$rel_data{$bid}};
+
+        my $bug = Bugzilla::Bug->new($bid);
+        $bug->set_dependencies(@depends, @blocks);
+        $bug->update();
+        print MYFILE "id: ".$bid." depends @depends blocks @blocks \n";
+    }
+
+#    $dbh->bz_commit_transaction();
+
+
+
+#    my $ordered_list     = $content->{"0"};        
+#    my $counter = 1;
+close (MYFILE); 
+#    for my $bug_id (@{$ordered_list}) {
+#        _set_bug_release_order($bug_id, $counter);
+#        $msg = $msg . "bug:" . $bug_id . "," . "order:" . $counter . ";"; # DEBUG
+#        $counter = $counter + 1;
+#    }
+#    my $unprioritised_list     = $content->{"-1"};        
+#    for my $unprioritised_bug_id (@{$unprioritised_list}) {
+#        _set_bug_release_order($unprioritised_bug_id, "NULL");
+#        $msg = $msg . "unprioritised bug:" . $unprioritised_bug_id . ";"; # DEBUG
+#    }
+#
+    $vars->{'json_text'} = 'hello';
+    #$vars->{'json_text'} = to_json([$msg]);
+}
+
 
 # This file can be loaded by your extension via
 # "use Bugzilla::Extension::TreeView::Util". You can put functions
