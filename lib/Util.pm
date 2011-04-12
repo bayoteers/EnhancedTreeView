@@ -158,11 +158,12 @@ sub ajax_tree_view {
 
     # bug id => (depends, blocks)
     my %rel_data = ();
-    my %depends = ();
+
     # collect all dependecies for a bug
     for my $bug_data (@{$content})
     {
-        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0' and $bug_data->{'parent_id'} ne 'root' and $bug_data->{'parent_id'} ne '0')
+        #  and $bug_data->{'parent_id'} ne 'root'
+        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0')
         {
             my $found = 0;
             foreach my $bid (keys %rel_data)
@@ -179,20 +180,23 @@ sub ajax_tree_view {
                 @{$rel_data{ $bug_data->{'item_id'} }} = ([], [$bug_data->{'parent_id'}]);
             }
 
-            $found = 0;
-            foreach my $bid (keys %rel_data)
+            if ($bug_data->{'parent_id'} ne '0' and $bug_data->{'parent_id'} ne 'root')
             {
-                # blocks on
-                if($bid eq $bug_data->{'parent_id'}) {
-                    $found = 1;
-                    print MYFILE "FOO @{$rel_data{ $bug_data->{'parent_id'} }[0]}\n";
-                    push(@{$rel_data{ $bug_data->{'parent_id'} }[0]}, $bug_data->{'item_id'});
-                    last;
+                $found = 0;
+                foreach my $bid (keys %rel_data)
+                {
+                    # blocks on
+                    if($bid eq $bug_data->{'parent_id'}) {
+                        $found = 1;
+                        print MYFILE "FOO @{$rel_data{ $bug_data->{'parent_id'} }[0]}\n";
+                        push(@{$rel_data{ $bug_data->{'parent_id'} }[0]}, $bug_data->{'item_id'});
+                        last;
+                    }
                 }
-            }
-            if (not $found)
-            {
-                @{$rel_data{ $bug_data->{'parent_id'} }} = ([$bug_data->{'item_id'}], []);
+                if (not $found)
+                {
+                    @{$rel_data{ $bug_data->{'parent_id'} }} = ([$bug_data->{'item_id'}], []);
+                }
             }
         }
     }
@@ -202,6 +206,10 @@ sub ajax_tree_view {
     for my $bid ( keys %rel_data ) {
         my (@blocks, @depends) = @{$rel_data{$bid}};
 
+        if (@depends and (scalar @depends[0] == 0 or @depends[0] == 'root'))
+        {
+            @depends = [];
+        }
         my $bug = Bugzilla::Bug->new($bid);
         $bug->set_dependencies(@depends, @blocks);
         $bug->update();
