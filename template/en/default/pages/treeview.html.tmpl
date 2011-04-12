@@ -40,13 +40,11 @@
 [% cntr = 0 %]
 
 
-[% FOREACH b_data IN bugs_data %]
+[% INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
 
-[% INCLUDE tree_section ids=b_data.dependson_ids type=1 dependson_tree=b_data.dependson_tree blocked_tree=b_data.blocked_tree blocked_ids=b_data.blocked_ids realdepth=b_data.realdepth bugid=b_data.bugid maxdepth=b_data.maxdepth hide_resolved=b_data.hide_resolved %]
+[%# INCLUDE tree_section_g ids=b_data.dependson_ids type=2 bsdata = bugs_data #%]
 
-[% INCLUDE tree_section ids=b_data.blocked_ids type=2 dependson_tree=b_data.dependeson_tree blocked_tree=b_data.blocked_tree blocked_ids=b_data.blocked_ids realdepth=b_data.realdepth bugid=b_data.bugid maxdepth=b_data.maxdepth hide_resolved=b_data.hide_resolved %] 
-
-[% END %]
+[%# INCLUDE tree_section ids=b_data.dependson_ids type=1 dependson_tree=b_data.dependson_tree blocked_tree=b_data.blocked_tree blocked_ids=b_data.blocked_ids realdepth=b_data.realdepth bugid=b_data.bugid maxdepth=b_data.maxdepth hide_resolved=b_data.hide_resolved #%]
 
 [% PROCESS depthControlToolbar %]
 
@@ -160,6 +158,68 @@
             background-color: #cfcfcf;
         }
 </style>
+
+[% BLOCK tree_section_g %]
+  [%# INTERFACE
+    #   - ids: a list of bug IDs to be displayed as children
+    #   - type: the type of tree. 1 = depends on, 2 = blockeds
+    # GLOBALS
+    #   - seen: Maintains a global hash of bugs that have been displayed
+    #%]
+  [% global.seen = {} %]
+  [%# Display the tree of bugs that this bug depends on. %]
+[% FOREACH b_data IN bugs_data %]
+    [% bugid = b_data.bugid %]
+    [% ids = b_data.dependson_ids %]
+  <h3>
+    <a href="show_bug.cgi?id=[% bugid %]">[% terms.Bug %] [%+ bugid %]</a> 
+    [% IF type == 1 %]
+        [% tree_name = "dependson_tree" %]
+        [% IF ids.size %]
+            depends on 
+        [% ELSE %]
+            does not depend on any [% terms.bugs %].
+        [% END %]
+    [% ELSIF type == 2 %]
+        [% tree_name = "blocked_tree" %]
+        [% IF ids.size %] 
+            blocks 
+        [% ELSE %]
+            does not block any [% terms.bugs %].
+        [% END %]
+    [% END %]
+    [% IF ids.size %]
+        [%+ (ids.size == 1) ? "one" : ids.size %]
+        [%+ IF hide_resolved %]open[% END %]
+        [%+ (ids.size == 1) ? terms.bug : terms.bugs %]:
+    [% END %] 
+  </h3>
+    ([% IF maxdepth -%]Up to [% maxdepth %] level[% "s" IF maxdepth > 1 %] deep | [% END -%]
+    <a href="buglist.cgi?bug_id=[% ids.join(",") %]">view as [% terms.bug %] list</a>
+    [% IF user.in_group('editbugs') && ids.size > 1 %]
+      | <a href="buglist.cgi?bug_id=[% ids.join(",") %]&amp;tweak=1">change several</a>
+    [% END %])
+[% END %] 
+    <ol class="tree sortable root">
+    <li id='foo_0'><span></span>
+    <ol >
+[% FOREACH b_data IN bugs_data %]
+    [% dependson_tree = b_data.dependson_tree %]
+    [% ids = b_data.dependson_ids %]
+    [% dependson_tree=b_data.dependson_tree %]
+    [% blocked_tree=b_data.blocked_tree %]
+    [% blocked_ids=b_data.blocked_ids %]
+    [% realdepth=b_data.realdepth %]
+    [% bugid=b_data.bugid %]
+    [% maxdepth=b_data.maxdepth %]
+    [% hide_resolved=b_data.hide_resolved %]
+
+      [% INCLUDE display_tree tree=$tree_name %]
+[% END %]
+    </ol>
+    </li></ol>
+
+[% END %]
 
 
 
@@ -295,9 +355,10 @@
    [%# Hide/show resolved button
        Swaps text depending on the state of hide_resolved %]
    <td align="center">
-   <form method="get" action="showdependencytree.cgi"
+   <form method="get" action=""
            style="display: inline; margin: 0px;">
-     <input name="id" type="hidden" value="[% bugid %]">
+     <input name="bug_id" type="hidden" value="[% FOREACH bug_data IN bugs_data %][% bug_data.bugid %],[% END %]">
+     <input name='id' type='hidden' value='treeview.html' />
      [% IF maxdepth %]
        <input name="maxdepth" type="hidden" value="[% maxdepth %]">
      [% END %]

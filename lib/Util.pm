@@ -96,12 +96,15 @@ sub show_tree_view {
 
     my @bug_ids = split(/[,]/, $cgi->param('bug_id'));
 
+    local our $hide_resolved = $cgi->param('hide_resolved') ? 1 : 0;
+
+    $vars->{'hide_resolved'} = $hide_resolved;
+
     $vars->{'bugs_data'} = [];
 
     foreach my $bug_id (@bug_ids)
     {
         my $bug = Bugzilla::Bug->check($bug_id);
-        #my $bug = Bugzilla::Bug->check(scalar $cgi->param('bug_id'));
         my $id  = $bug->id;
 
         my $dependson_tree = { $id => $bug };
@@ -130,10 +133,7 @@ sub show_tree_view {
 
         use Storable qw(dclone);
 
-        #my %tmp = dclone(%bug_data);
-        #push (@{$vars->{'bugs_data'}}, \${bug_data} );
         push (@{$vars->{'bugs_data'}}, dclone(\%bug_data) );
-        print MYFILE "dep2 @{$vars->{'bugs_data'}[0]{'dependson_ids'}} \n";
 
         #$vars->{'counter'} = sub { return (@_ + 1) };
     }
@@ -159,14 +159,11 @@ sub ajax_tree_view {
     # bug id => (depends, blocks)
     my %rel_data = ();
     my %depends = ();
-open (MYFILE, '>>/tmp/data.txt');
     # collect all dependecies for a bug
     for my $bug_data (@{$content})
     {
-        #print MYFILE "id: ".$bug_data->{'item_id'}." parent: ".$bug_data->{'parent_id'}."\n";
         if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0' and $bug_data->{'parent_id'} ne 'root' and $bug_data->{'parent_id'} ne '0')
         {
-            #print MYFILE "id: ".$bug_data->{'item_id'}." ".$bug_data->{'parent_id'}." \n";
             my $found = 0;
             foreach my $bid (keys %rel_data)
             {
@@ -180,7 +177,6 @@ open (MYFILE, '>>/tmp/data.txt');
             if (not $found)
             {
                 @{$rel_data{ $bug_data->{'item_id'} }} = ([], [$bug_data->{'parent_id'}]);
-                #@{$rel_data{ $bug_data->{'item_id'} }} = (, ($bug_data->{'parent_id'}));
             }
 
             $found = 0;
@@ -201,8 +197,6 @@ open (MYFILE, '>>/tmp/data.txt');
         }
     }
 
-#    my $dbh = Bugzilla->dbh;
-#
 #    $dbh->bz_start_transaction();
 
     for my $bid ( keys %rel_data ) {
@@ -216,30 +210,9 @@ open (MYFILE, '>>/tmp/data.txt');
 
 #    $dbh->bz_commit_transaction();
 
-
-
-#    my $ordered_list     = $content->{"0"};        
-#    my $counter = 1;
-close (MYFILE); 
-#    for my $bug_id (@{$ordered_list}) {
-#        _set_bug_release_order($bug_id, $counter);
-#        $msg = $msg . "bug:" . $bug_id . "," . "order:" . $counter . ";"; # DEBUG
-#        $counter = $counter + 1;
-#    }
-#    my $unprioritised_list     = $content->{"-1"};        
-#    for my $unprioritised_bug_id (@{$unprioritised_list}) {
-#        _set_bug_release_order($unprioritised_bug_id, "NULL");
-#        $msg = $msg . "unprioritised bug:" . $unprioritised_bug_id . ";"; # DEBUG
-#    }
-#
     $vars->{'json_text'} = 'hello';
     #$vars->{'json_text'} = to_json([$msg]);
 }
 
-
-# This file can be loaded by your extension via
-# "use Bugzilla::Extension::TreeView::Util". You can put functions
-# used by your extension in here. (Make sure you also list them in
-# @EXPORT.)
 
 1;
