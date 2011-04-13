@@ -173,7 +173,12 @@
     [%+ (loop.count > 1) ? "," : '' %]
     [% bugid = b_data.bugid %]
     [% ids = b_data.dependson_ids %]
-    <a href="show_bug.cgi?id=[% bugid %]">[% terms.Bug %] [%+ bugid %]</a> 
+    <a href="show_bug.cgi?id=[% bugid %]">
+      [% IF loop.count == 1 %]
+        [% terms.Bug %]
+      [% END %]
+      [%+ bugid %]
+    </a>
     [% IF type == 1 %]
         [% tree_name = "dependson_tree" %]
         [% IF ids.size %]
