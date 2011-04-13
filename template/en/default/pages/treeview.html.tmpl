@@ -35,7 +35,6 @@
 
 [% PROCESS depthControlToolbar %]
 
-<input type='button' id='save_tree' value='save' />
 
 [% cntr = 0 %]
 
@@ -168,38 +167,37 @@
     #%]
   [% global.seen = {} %]
   [%# Display the tree of bugs that this bug depends on. %]
+  <h3>
+    Dependencies:
 [% FOREACH b_data IN bugs_data %]
+    [%+ (loop.count > 1) ? "," : '' %]
     [% bugid = b_data.bugid %]
     [% ids = b_data.dependson_ids %]
-  <h3>
     <a href="show_bug.cgi?id=[% bugid %]">[% terms.Bug %] [%+ bugid %]</a> 
     [% IF type == 1 %]
         [% tree_name = "dependson_tree" %]
         [% IF ids.size %]
-            depends on 
         [% ELSE %]
-            does not depend on any [% terms.bugs %].
+           [% terms.bugs %].
         [% END %]
     [% ELSIF type == 2 %]
         [% tree_name = "blocked_tree" %]
         [% IF ids.size %] 
-            blocks 
         [% ELSE %]
-            does not block any [% terms.bugs %].
+            [% terms.bugs %].
         [% END %]
     [% END %]
     [% IF ids.size %]
-        [%+ (ids.size == 1) ? "one" : ids.size %]
+       <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ (ids.size == 1) ? "one" : ids.size %])</a>
         [%+ IF hide_resolved %]open[% END %]
-        [%+ (ids.size == 1) ? terms.bug : terms.bugs %]:
     [% END %] 
-  </h3>
-    ([% IF maxdepth -%]Up to [% maxdepth %] level[% "s" IF maxdepth > 1 %] deep | [% END -%]
-    <a href="buglist.cgi?bug_id=[% ids.join(",") %]">view as [% terms.bug %] list</a>
+    [% IF maxdepth -%]Up to [% maxdepth %] level[% "s" IF maxdepth > 1 %] deep | [% END -%]
     [% IF user.in_group('editbugs') && ids.size > 1 %]
-      | <a href="buglist.cgi?bug_id=[% ids.join(",") %]&amp;tweak=1">change several</a>
-    [% END %])
+    <!-- <a href="buglist.cgi?bug_id=[% ids.join(",") %]&amp;tweak=1">change several</a> -->
+    [% END %]
 [% END %] 
+    , <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.dependson_ids.join(',') %],[% b_data.bugid %],[% END %]">view all as bug list</a>
+  </h3>
     <ol class="tree sortable root">
     <li id='foo_0'><span></span>
     <ol >
@@ -448,6 +446,10 @@
        [% "disabled" IF maxdepth == 0 || maxdepth == realdepth %]>
    </form>
    </td>
+
+    <td>
+        <input type='button' id='save_tree' value='Save Tree' />
+    </td>
  </tr>
 </table>
 

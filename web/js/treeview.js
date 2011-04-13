@@ -10,10 +10,10 @@ function doToggle_with_ol(node, event) {
 
     if (toggle) {
         if (deep) {
-            var direction = toggleDisplay(toggle, node);
+            var direction = toggleDisplay(toggle, $(node).children('a').get(0));
             changeChildren(toggle, direction);
         } else {
-            toggleDisplay(toggle, node);
+            toggleDisplay(toggle, $(node).children('a').get(0));
         }
     }
     /* avoid problems with default actions on links (mozilla's
