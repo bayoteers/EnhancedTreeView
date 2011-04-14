@@ -96,16 +96,25 @@
                 {
                     var done = false;
                     var tree = $(this);
+                    function revert()
+                    {
+                        alert('refusing dependency loop');
+                        tree.sortable('cancel');
+                    }
+                    var tree_bug_ids = [];
                     // dependency loop detection
-                    ui.item.parents('li').each(function()
+                    ui.item.parents('li').each(function ()
                         {
+                            // detect in the same tree
                             var parent_li = $(this);
+                            // bug ids above inserted element in the target tree.
+                            // used to check reverse dependency in other trees
+                            tree_bug_ids.push(parent_li.attr('id'));
                             ui.item.parent().find('li').each(function ()
                                 {
                                     if ($(this).attr('id') == parent_li.attr('id'))
                                     {
-                                        alert('refusing dependency loop');
-                                        tree.sortable('cancel');
+                                        revert();
                                         done = true;
                                         return false;
                                     }
@@ -113,6 +122,54 @@
                             if (done)
                             {
                                 return false;
+                            }
+
+                            // at the top level
+                            if (parent_li.parent().closest('li').attr('id') == 'foo_0')
+                            {
+                                var done = false;
+
+                                var moved_bug_ids = [ui.item.attr('id')];
+                                ui.item.find('li').each(function ()
+                                {
+                                   moved_bug_ids.push($(this).attr('id'));
+                                });
+
+                                // detect other trees
+                                parent_li.siblings().each(function ()
+                                    {
+                                        var found_target_tree_bug = false;
+                                        var found_target_bug = false;
+                                        function check_bug(bug_id)
+                                        {
+                                            if ($.inArray(bug_id, tree_bug_ids) > -1)
+                                            {
+                                                found_target_tree_bug = true;
+                                            }
+                                            if ($.inArray(bug_id, moved_bug_ids) > -1)
+                                            {
+                                                found_target_bug = true;
+                                            }
+                                        }
+
+                                        check_bug($(this).attr('id'));
+                                        $(this).find('li').each(function ()
+                                            {
+                                                check_bug($(this).attr('id'));
+                                                if (found_target_bug && found_target_tree_bug)
+                                                {
+                                                    revert();
+                                                    done = true;
+                                                    return false;
+                                                }
+
+                                            });
+                                        if (done)
+                                        {
+                                            return false;
+                                        }
+
+                                    });
                             }
                         });
                     parent_li = ui.item.parents('li');
