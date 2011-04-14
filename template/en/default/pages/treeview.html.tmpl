@@ -35,7 +35,6 @@
 
 [% PROCESS depthControlToolbar %]
 
-
 [% cntr = 0 %]
 
 
@@ -54,9 +53,29 @@
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
 <script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js"></script>
 
-
   <script>
     $(document).ready(function() {
+
+        $('.loading_element').each(function()
+            {
+                $(this).hide()
+                .ajaxStart(function() {
+                    $(this).show();
+                })
+                .ajaxStop(function() {
+                    $(this).hide();
+                });
+
+            });
+        $('#loadingDiv')
+            .hide()  // hide it initially
+            .ajaxStart(function() {
+                $(this).show();
+            })
+            .ajaxStop(function() {
+                $(this).hide();
+            })
+        ;
 
         $('.sortable').nestedSortable({
             disableNesting: 'no-nest',
@@ -70,21 +89,43 @@
             revert: 250,
             tabSize: 25,
             tolerance: 'pointer',
-            toleranceElement: '> span'
+            toleranceElement: '> span',
+            listType: 'ul',
+
+            stop: function (event, ui)
+                {
+                    var done = false;
+                    var tree = $(this);
+                    // dependency loop detection
+                    ui.item.parents('li').each(function()
+                        {
+                            var parent_li = $(this);
+                            ui.item.parent().find('li').each(function ()
+                                {
+                                    if ($(this).attr('id') == parent_li.attr('id'))
+                                    {
+                                        alert('refusing dependency loop');
+                                        tree.sortable('cancel');
+                                        done = true;
+                                        return false;
+                                    }
+                                });
+                            if (done)
+                            {
+                                return false;
+                            }
+                        });
+                    parent_li = ui.item.parents('li');
+                    item_a_node = $(parent_li.find('span').find('a').get(0));
+                    p_id = parent_li.attr('id');
+                    if (p_id && p_id != 'foo_0' && p_id != 'root')
+                    {
+                        p_id = p_id.split('_')[1];
+                        item_a_node.attr('onclick', 'expclo(this);');
+                        item_a_node.attr('class', 'b b_open');
+                    }
+                }
         });
-
-
-
-//        $('.lis').sortable({
-//            connectWith: ".connectedSortable",
-//            start: function(event, ui) {
-//                //from_list_ul_id = ui.item.parent().attr('id');
-//            },
-//            stop: function(event, ui) {
-//                //switch_lists(ui, lists);;
-//            }
-//        }).disableSelection();
-//
     });
   </script>
 
@@ -133,13 +174,13 @@
 
 
 
-        ol.sortable, ol.sortable ol {
+        ul.sortable, ul.sortable ul {
             margin: 0 0 0 25px;
             padding: 0;
             list-style-type: none;
         }
 
-        ol.sortable {
+        ul.sortable {
             margin: 4em 0;
         }
        .sortable li {
@@ -147,14 +188,15 @@
             padding: 0;
         }
 
-        .sortable li div  {
+        .sortable li span  {
             /*border: 1px solid black;*/
             padding: 3px;
             margin: 0;
             cursor: move;
         }
         .placeholder {
-            background-color: #cfcfcf;
+            /*background: #cfcfcf url("dependency-tree/bug-item.png") no-repeat;*/
+            border: 1px dashed black;
         }
 </style>
 
@@ -178,13 +220,11 @@
         [% tree_name = "dependson_tree" %]
         [% IF ids.size %]
         [% ELSE %]
-           [% terms.bugs %].
         [% END %]
     [% ELSIF type == 2 %]
         [% tree_name = "blocked_tree" %]
         [% IF ids.size %] 
         [% ELSE %]
-            [% terms.bugs %].
         [% END %]
     [% END %]
     [% IF ids.size %]
@@ -198,9 +238,10 @@
 [% END %] 
     , <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.dependson_ids.join(',') %],[% b_data.bugid %],[% END %]">view all as bug list</a>
   </h3>
-    <ol class="tree sortable root">
+
+    <ul class="tree sortable root no-nest">
     <li id='foo_0'><span></span>
-    <ol >
+    <ul >
 [% FOREACH b_data IN bugs_data %]
     [% dependson_tree = b_data.dependson_tree %]
     [% ids = b_data.dependson_ids %]
@@ -214,8 +255,8 @@
 
       [% INCLUDE display_tree tree=$tree_name %]
 [% END %]
-    </ol>
-    </li></ol>
+    </ul>
+    </li></ul>
 
 [% END %]
 
@@ -281,7 +322,7 @@
     #%]
   [% bug = tree.$bugid %]
   [% cntr = counter(cntr) %]
-  <li id="bug_[% bug.id %]">
+  <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]'>
     <span>
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
@@ -292,18 +333,21 @@
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
     </span>
-    </span>
 
     [% IF global.seen.$bugid %]
-      <b><a title="Already displayed above; click to locate"
+      <b style='color: red;'><a title="Already displayed above; click to locate"
             onclick="duplicated('[% bugid FILTER html %]')"
             href="#b[% bugid %]">(*)</a></b>
+    </span>
     [% ELSIF tree.dependencies.$bugid.size %]
-      <ol>
+    </span>
+      <ul>
         [% FOREACH depid = tree.dependencies.$bugid %]
           [% INCLUDE display_tree bugid=depid %]
         [% END %]
-      </ol>
+      </ul>
+    [% ELSE %]
+    </span>
     [% END %]
   </li>
   [% global.seen.$bugid = 1 %]
@@ -312,7 +356,9 @@
 [% BLOCK bullet %]
   [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
     [% extra_class = " b_open" %]
-    [% extra_args = 'onclick="return doToggle_with_ol($(this).parent().get(0), event)"' %] 
+    [%# extra_args = 'onclick="return doToggle(this, event);"' #%] 
+    [%# extra_args = 'onclick="$(this).parent().next(\'ul\').toggle(); $(this).toggleClass(\'b_open\').toggleClass(\'b_closed\');"' #%] 
+    [% extra_args = 'onclick="expclo(this);"' %]
   [% END %]
   <a name="b[% bugid %]" 
      class="b [%+ extra_class FILTER none %]"
@@ -450,7 +496,9 @@
     <td>
         <input type='button' id='save_tree' value='Save Tree' />
     </td>
+    <td class='loading_element'>
+        <img src='extensions/TreeView/web/ajax-loader.gif' />
+    </td>
  </tr>
 </table>
-
 [% END %]
