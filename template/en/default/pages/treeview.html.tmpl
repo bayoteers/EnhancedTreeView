@@ -27,10 +27,13 @@
    title           = "Dependency tree for $terms.Bug $bugid"
    header          = "Dependency tree for 
                       <a href=\"show_bug.cgi?id=$bugid\">$terms.Bug $bugid</a>"
-   javascript_urls = ["js/expanding-tree.js"]
+   javascript_urls = ["js/expanding-tree.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js", "extensions/TreeView/web/js/treeview.js"]
    style_urls      = ["skins/standard/dependency-tree.css"]
+
+
    subheader      = filtered_desc
    doc_section = "hintsandtips.html#dependencytree"
+
 %]
 
 [% PROCESS depthControlToolbar %]
@@ -54,6 +57,7 @@
 <script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js"></script>
 
   <script>
+    var original_tree = [];
     $(document).ready(function() {
 
         $('.loading_element').each(function()
@@ -183,6 +187,7 @@
                     }
                 }
         });
+    original_tree = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
     });
   </script>
 
