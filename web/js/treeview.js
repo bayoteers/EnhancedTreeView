@@ -61,7 +61,7 @@ $('#save_tree').click(function(e)
         {
             tree: JSON.stringify(changed),
         },
-        function () { alert('saved'); },
+        function () { alert('saved'); original_tree = $.extend(true, [], arraied); },
         'json');
 });
 
