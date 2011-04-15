@@ -12,12 +12,12 @@
 #
 # The Original Code is the TreeView Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is YOUR NAME
+# The Initial Developer of the Original Code is Eero Heino
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
-#   YOUR NAME <YOUR EMAIL ADDRESS>
+#   Eero Heino <eero.heino@nokia.com>
 
 package Bugzilla::Extension::TreeView;
 use strict;

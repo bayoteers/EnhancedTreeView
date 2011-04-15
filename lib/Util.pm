@@ -12,12 +12,12 @@
 #
 # The Original Code is the TreeView Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is YOUR NAME
+# The Initial Developer of the Original Code is Eero Heino 
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
-#   YOUR NAME <YOUR EMAIL ADDRESS>
+#   Eero Heino <eero.heino@nokia.com>
 
 package Bugzilla::Extension::TreeView::Util;
 use strict;
@@ -30,8 +30,6 @@ our @EXPORT = qw(
   ajax_tree_view
 
   );
-
-#local our $hide_resolved = $cgi->param('hide_resolved') ? 1 : 0;
 
 #local our $maxdepth = $cgi->param('maxdepth') || 0;
 local our $maxdepth      = 0;
@@ -134,8 +132,6 @@ sub show_tree_view {
         use Storable qw(dclone);
 
         push (@{$vars->{'bugs_data'}}, dclone(\%bug_data) );
-
-        #$vars->{'counter'} = sub { return (@_ + 1) };
     }
 
 
@@ -201,8 +197,6 @@ sub ajax_tree_view {
         }
     }
 
-#    $dbh->bz_start_transaction();
-
     for my $bid ( keys %rel_data ) {
         my (@blocks, @depends) = @{$rel_data{$bid}};
 
@@ -216,10 +210,7 @@ sub ajax_tree_view {
         print MYFILE "id: ".$bid." depends @depends blocks @blocks \n";
     }
 
-#    $dbh->bz_commit_transaction();
-
     $vars->{'json_text'} = 'hello';
-    #$vars->{'json_text'} = to_json([$msg]);
 }
 
 

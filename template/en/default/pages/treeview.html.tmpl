@@ -9,16 +9,18 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Scrums Bugzilla Extension.
+  # The Original Code is the TreeView Bugzilla Extension.
   #
-  # The Initial Developer of the Original Code is YOUR NAME
-  # Portions created by the Initial Developer are Copyright (C) 2010 the
+  # The Initial Developer of the Original Code is Eero Heino
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
   # Initial Developer. All Rights Reserved.
   #
   # Contributor(s):
   #   Eero Heino <eero.heino@nokia.com>
   #%]
 
+
+[%#   javascript_urls = ["js/expanding-tree.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js", "extensions/TreeView/web/js/treeview.js"] #%]
 
 [% PROCESS 'global/field-descs.none.tmpl' %]
 
@@ -27,9 +29,8 @@
    title           = "Dependency tree for $terms.Bug $bugid"
    header          = "Dependency tree for 
                       <a href=\"show_bug.cgi?id=$bugid\">$terms.Bug $bugid</a>"
-   javascript_urls = ["js/expanding-tree.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js", "extensions/TreeView/web/js/treeview.js"]
-   style_urls      = ["skins/standard/dependency-tree.css"]
-
+   javascript_urls = ["js/expanding-tree.js"]
+   style_urls      = ["skins/standard/dependency-tree.css", "extensions/TreeView/web/css/treeview.css"]
 
    subheader      = filtered_desc
    doc_section = "hintsandtips.html#dependencytree"
@@ -37,9 +38,6 @@
 %]
 
 [% PROCESS depthControlToolbar %]
-
-[% cntr = 0 %]
-
 
 [% INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
 
@@ -191,77 +189,6 @@
     });
   </script>
 
-<style type="text/css">
-        ol.tree {
-            padding-left: 0em;
-            margin-left: 1em;
-            display: block;
-        }
-
-        ol.tree li a.b {
-            padding-left: 30px;
-            margin-right: -14px;
-            text-decoration: none;
-        }
-
-        ol.tree a.tree_link img {
-            border: 0;
-        }
-
-        ol.tree ol {
-            padding-top: 3px;
-            display: block;
-        }
-        ol.tree li a.b_open {
-            background: url("skins/standard/dependency-tree/tree-open.png") center no-repeat;
-            cursor: pointer;
-        }
-
-        ol.tree li a.b_closed {
-            background: url("skins/standard/dependency-tree/tree-closed.png") center no-repeat;
-            cursor: pointer;
-        }
-
-        ol {
-            margin: 0;
-            padding: 0;
-            padding-left: 30px;
-        }
-
-        ol.root {
-            margin: 0;
-            padding: 0;
-            padding-left: 0;
-        }
-
-
-
-        ul.sortable, ul.sortable ul {
-            margin: 0 0 0 25px;
-            padding: 0;
-            list-style-type: none;
-        }
-
-        ul.sortable {
-            margin: 4em 0;
-        }
-       .sortable li {
-            margin: 7px 0 0 0;
-            padding: 0;
-        }
-
-        .sortable li span  {
-            /*border: 1px solid black;*/
-            padding: 3px;
-            margin: 0;
-            cursor: move;
-        }
-        .placeholder {
-            /*background: #cfcfcf url("dependency-tree/bug-item.png") no-repeat;*/
-            border: 1px dashed black;
-        }
-</style>
-
 [% BLOCK tree_section_g %]
   [%# INTERFACE
     #   - ids: a list of bug IDs to be displayed as children
@@ -388,7 +315,6 @@
     #   - tree: a hash of bug objects and of bug dependencies
     #%]
   [% bug = tree.$bugid %]
-  [% cntr = counter(cntr) %]
   <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]'>
     <span>
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
