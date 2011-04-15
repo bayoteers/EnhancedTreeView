@@ -212,6 +212,7 @@ sub ajax_tree_view {
         print MYFILE "id: ".$bid." depends @depends blocks @blocks \n";
     }
 
+
     $vars->{'json_text'} = 'hello';
 }
 
