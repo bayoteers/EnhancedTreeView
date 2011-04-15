@@ -83,7 +83,13 @@ $('#save_tree').click(function(e)
         {
             tree: JSON.stringify(changed),
         },
-        function () { alert('saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide() },
+        function ()
+        {
+            alert('saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
+
+            $('#cancel_edit_mode').attr('disabled', 'disabled');
+            $('#save_tree').attr('disabled', 'disabled');
+        },
         'json');
 });
 

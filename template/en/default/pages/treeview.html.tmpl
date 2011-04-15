@@ -59,7 +59,6 @@
     $(document).ready(function() {
 
         $('.edit_mode').hide();
-        $('.edited').hide();
         $('#enable_edit_mode').each(function()
             {
 
@@ -193,7 +192,8 @@
                         });
                     if (!reverted)
                     {
-                        $('.edited').show();
+                        $('#cancel_edit_mode').removeAttr('disabled');
+                        $('#save_tree').removeAttr('disabled');
                     }
                     parent_li = ui.item.parents('li');
                     item_a_node = $(parent_li.find('span').find('a').get(0));
@@ -512,10 +512,8 @@
     </td>
 
     <td class='edit_mode'>
-        <span class='edited'>
-            <input type='button' id='cancel_edit_mode' value='Cancel' onclick="history.go(0)" />
-        </span>
-        <input type='button' id='save_tree' value='Save Tree' />
+        <input type='button' disabled='disabled' id='cancel_edit_mode' value='Cancel' onclick="history.go(0)" />
+        <input type='button' disabled='disabled' id='save_tree' value='Save Tree' />
     </td>
     <td class='loading_element'>
         <img src='extensions/TreeView/web/ajax-loader.gif' />
