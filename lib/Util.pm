@@ -143,6 +143,7 @@ sub ajax_tree_view {
     use JSON;
 
     my $cgi    = Bugzilla->cgi;
+    my $dbh = Bugzilla->dbh;
     my $json = new JSON::XS;
 
     my $data = $cgi->param('tree');
@@ -196,7 +197,7 @@ sub ajax_tree_view {
             }
         }
     }
-
+    #my $timestamp = $dbh->selectrow_array(q{SELECT LOCALTIMESTAMP(0)});
     for my $bid ( keys %rel_data ) {
         my (@blocks, @depends) = @{$rel_data{$bid}};
 
@@ -206,6 +207,7 @@ sub ajax_tree_view {
         }
         my $bug = Bugzilla::Bug->new($bid);
         $bug->set_dependencies(@depends, @blocks);
+        #$bug->update($timestamp);
         $bug->update();
         print MYFILE "id: ".$bid." depends @depends blocks @blocks \n";
     }

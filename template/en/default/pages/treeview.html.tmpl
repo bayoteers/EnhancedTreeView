@@ -58,6 +58,20 @@
     var original_tree = [];
     $(document).ready(function() {
 
+        $('.edit_mode').hide();
+        $('.edited').hide();
+        $('#enable_edit_mode').each(function()
+            {
+
+                $(this).click(function()
+                    {
+                        $('.edit_mode').toggle();
+                        $('.read_mode').toggle();
+                        $( ".sortable" ).sortable( "option", "disabled", false );
+                    });
+            });
+
+
         $('.loading_element').each(function()
             {
                 $(this).hide()
@@ -80,6 +94,7 @@
         ;
 
         $('.sortable').nestedSortable({
+            disabled: true,
             disableNesting: 'no-nest',
             forcePlaceholderSize: true,
             handle: 'span',
@@ -98,10 +113,12 @@
                 {
                     var done = false;
                     var tree = $(this);
+                    var reverted = false;
                     function revert()
                     {
                         alert('refusing dependency loop');
                         tree.sortable('cancel');
+                        reverted = true;
                     }
                     var tree_bug_ids = [];
                     // dependency loop detection
@@ -174,6 +191,10 @@
                                     });
                             }
                         });
+                    if (!reverted)
+                    {
+                        $('.edited').show();
+                    }
                     parent_li = ui.item.parents('li');
                     item_a_node = $(parent_li.find('span').find('a').get(0));
                     p_id = parent_li.attr('id');
@@ -486,7 +507,14 @@
    </form>
    </td>
 
-    <td>
+    <td class='read_mode'>
+        <input type='button' id='enable_edit_mode' value='Enable Edit Mode' />
+    </td>
+
+    <td class='edit_mode'>
+        <span class='edited'>
+            <input type='button' id='cancel_edit_mode' value='Cancel' onclick="history.go(0)" />
+        </span>
         <input type='button' id='save_tree' value='Save Tree' />
     </td>
     <td class='loading_element'>
