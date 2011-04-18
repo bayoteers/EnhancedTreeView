@@ -201,7 +201,7 @@ sub ajax_tree_view {
     for my $bid ( keys %rel_data ) {
         my (@blocks, @depends) = @{$rel_data{$bid}};
 
-        if (@depends and (scalar @depends[0] == 0 or @depends[0] == 'root'))
+        if (@depends and (scalar $depends[0] == 0 or $depends[0] == 'root'))
         {
             @depends = [];
         }
