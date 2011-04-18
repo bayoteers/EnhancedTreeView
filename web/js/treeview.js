@@ -85,7 +85,7 @@ $('#save_tree').click(function(e)
         },
         function ()
         {
-            alert('saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
+            alert('Tree Saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
 
             $('#cancel_edit_mode').attr('disabled', 'disabled');
             $('#save_tree').attr('disabled', 'disabled');
