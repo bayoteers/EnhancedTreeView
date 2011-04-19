@@ -56,6 +56,7 @@
 
   <script>
     var original_tree = [];
+    var sortable_parent = null;
     $(document).ready(function() {
 
         $('.edit_mode').hide();
@@ -107,6 +108,11 @@
             tolerance: 'pointer',
             toleranceElement: '> span',
             listType: 'ul',
+
+            start: function (event, ui)
+                {
+                    sortable_parent = ui.item.parents('li');
+                },
 
             stop: function (event, ui)
                 {
@@ -190,14 +196,25 @@
                                     });
                             }
                         });
+
+                    parent_li = ui.item.parents('li');
+                    p_id = parent_li.attr('id');
+
                     if (!reverted)
                     {
                         $('#cancel_edit_mode').removeAttr('disabled');
                         $('#save_tree').removeAttr('disabled');
+                        // replace the old parent with the new one for the clone link in all instances of this moved bug
+                        $('li[id^='+ui.item.attr('id')+']').each(function ()
+                        {
+                            var clone_link = $(this).find('.clone_link');
+                            var blocked_field = clone_link.attr('href').match('blocked=([0-9,]+)')[0];
+                            alert(blocked_field);
+                            var new_blocked_field = blocked_field.replace(sortable_parent.attr('id').replace('bug_', ''), p_id.replace('bug_', ''));
+                            clone_link.attr('href', clone_link.attr('href').replace(blocked_field, new_blocked_field));
+                        });
                     }
-                    parent_li = ui.item.parents('li');
                     item_a_node = $(parent_li.find('span').find('a').get(0));
-                    p_id = parent_li.attr('id');
                     if (p_id && p_id != 'foo_0' && p_id != 'root')
                     {
                         p_id = p_id.split('_')[1];
@@ -351,6 +368,10 @@
    <span class='intend'>
         <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
             [create bug]
+        </a>
+        &nbsp;&nbsp;
+        <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&product=[% bug.product %]&component=[% bug.component %]=&blocked=[% FOREACH block = bug.blocked %][% block %],[% END %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
+            [clone bug]
         </a>
         
     </span>
