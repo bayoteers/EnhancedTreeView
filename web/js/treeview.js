@@ -89,6 +89,12 @@ $('#save_tree').click(function(e)
 
             $('#cancel_edit_mode').attr('disabled', 'disabled');
             $('#save_tree').attr('disabled', 'disabled');
+            $('a[hrefnew]').each(function ()
+            {
+                elem = $(this);
+                elem.attr('href', elem.attr('hrefnew'));
+                elem.removeAttr('hrefnew');
+            });
         },
         'json');
 });
