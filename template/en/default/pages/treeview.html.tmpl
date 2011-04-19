@@ -211,7 +211,10 @@
                             var blocked_field = clone_link.attr('href').match('blocked=([0-9,]+)')[0];
                             alert(blocked_field);
                             var new_blocked_field = blocked_field.replace(sortable_parent.attr('id').replace('bug_', ''), p_id.replace('bug_', ''));
-                            clone_link.attr('href', clone_link.attr('href').replace(blocked_field, new_blocked_field));
+                            // disabling link until saved
+                            clone_link.attr('hrefnew', clone_link.attr('href').replace(blocked_field, new_blocked_field));
+                            clone_link.removeAttr('href');
+
                         });
                     }
                     item_a_node = $(parent_li.find('span').find('a').get(0));
