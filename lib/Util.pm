@@ -69,6 +69,7 @@ sub GenerateTree {
         # when bugs appear in dependency trees multiple times).
         if (!$bugs->{$dep_id}) {
             $bugs->{$dep_id} = new Bugzilla::Bug($dep_id);
+            #%{$bugs->{$dep_id}->{'af'}} = \$bugs->{$dep_id}->fields();
             GenerateTree($dep_id, $relationship, $depth + 1, $bugs, $ids);
         }
 
@@ -96,6 +97,8 @@ sub show_tree_view {
 
     local our $hide_resolved = $cgi->param('hide_resolved') ? 1 : 0;
 
+    $vars->{'inherited_fields'} = Bugzilla->params->{"treeview_inherited_attributes"};
+
     $vars->{'hide_resolved'} = $hide_resolved;
 
     $vars->{'bugs_data'} = [];
@@ -114,9 +117,6 @@ sub show_tree_view {
         $bug_data{'dependson_tree'} = $dependson_tree;
         $bug_data{'dependson_ids'}  = [ keys(%$dependson_ids) ];
 
-        open (MYFILE, '>>/tmp/bz.txt');
-        print MYFILE "dep @{$bug_data{'dependson_ids'}} \n";
-
         my $blocked_tree = { $id => $bug };
         my $blocked_ids = {};
         GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
@@ -128,6 +128,7 @@ sub show_tree_view {
         $bug_data{'bugid'}         = $id;
         $bug_data{'maxdepth'}      = $maxdepth;
         $bug_data{'hide_resolved'} = $hide_resolved;
+        $bug_data{'allfields'} = $bug->fields();
 
         use Storable qw(dclone);
 
@@ -185,7 +186,6 @@ sub ajax_tree_view {
                     # blocks on
                     if($bid eq $bug_data->{'parent_id'}) {
                         $found = 1;
-                        print MYFILE "FOO @{$rel_data{ $bug_data->{'parent_id'} }[0]}\n";
                         push(@{$rel_data{ $bug_data->{'parent_id'} }[0]}, $bug_data->{'item_id'});
                         last;
                     }
@@ -207,9 +207,9 @@ sub ajax_tree_view {
         }
         my $bug = Bugzilla::Bug->new($bid);
         $bug->set_dependencies(@depends, @blocks);
-        #$bug->update($timestamp);
+        use Data::Dumper;
+
         $bug->update();
-        print MYFILE "id: ".$bid." depends @depends blocks @blocks \n";
     }
 
 
