@@ -19,6 +19,10 @@
      Eero Heino <eero.heino@nokia.com>
   */
 
+span.intend {
+    padding-left: 30px;
+}
+
 ul.sortable, ul.sortable ul {
     margin: 0 0 0 25px;
     padding: 0;

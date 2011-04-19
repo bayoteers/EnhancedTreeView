@@ -28,12 +28,37 @@ use Bugzilla::Extension::TreeView::Util;
 
 our $VERSION = '0.01';
 
+sub config {
+    my ($self, $args) = @_;
+
+    my $config = $args->{config};
+    $config->{TreeView} = "Bugzilla::Extension::TreeView::Config";
+}
+
+sub config_add_panels {
+    my ($self, $args) = @_;
+
+    my $modules = $args->{panel_modules};
+    $modules->{TreeView} = "Bugzilla::Extension::TreeView::Config";
+}
+
 # See the documentation of Bugzilla::Hook ("perldoc Bugzilla::Hook"
 # in the bugzilla directory) for a list of all available hooks.
 sub install_update_db {
     my ($self, $args) = @_;
 
 }
+
+sub enter_bug_url_fields {
+    my ($self, $args) = @_;
+    my $vars = $args->{'vars'}; 
+    my $cgi = Bugzilla->cgi;
+
+    $vars->{'dependson'} = $cgi->param('dependson');
+    $vars->{'blocks'} = $cgi->param('blocks');
+    $vars->{'target_milestone'} = $cgi->param('target_milestone');
+}
+
 
 sub page_before_template {
     my ($self, $args) = @_;

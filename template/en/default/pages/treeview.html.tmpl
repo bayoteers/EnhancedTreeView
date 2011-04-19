@@ -347,7 +347,13 @@
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
     </span>
-
+    <br />
+   <span class='intend'>
+        <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
+            [create bug]
+        </a>
+        
+    </span>
     [% IF global.seen.$bugid %]
       <b style='color: red;'><a title="Already displayed above; click to locate"
             onclick="duplicated('[% bugid FILTER html %]')"
