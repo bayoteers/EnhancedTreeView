@@ -30,7 +30,7 @@
    header          = "Dependency tree for 
                       <a href=\"show_bug.cgi?id=$bugid\">$terms.Bug $bugid</a>"
    javascript_urls = ["js/expanding-tree.js"]
-   style_urls      = ["skins/standard/dependency-tree.css", "extensions/TreeView/web/css/treeview.css"]
+   style_urls      = ["skins/standard/dependency-tree.css", "extensions/TreeView/web/css/treeview.css?v=$version"]
 
    subheader      = filtered_desc
    doc_section = "hintsandtips.html#dependencytree"
@@ -52,7 +52,7 @@
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
-<script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js"></script>
+<script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js?v=[% version %]"></script>
 
   <script>
     var original_tree = [];

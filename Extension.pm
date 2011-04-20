@@ -26,7 +26,7 @@ use base qw(Bugzilla::Extension);
 # This code for this is in ./extensions/TreeView/lib/Util.pm
 use Bugzilla::Extension::TreeView::Util;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub config {
     my ($self, $args) = @_;
@@ -83,10 +83,10 @@ sub page_before_template {
     $vars->{'user'} = Bugzilla->user;
 
     if ($page eq 'treeview.html') {
-        show_tree_view($vars);
+        show_tree_view($vars, $VERSION);
     }
     if ($page eq 'treeview_ajax.html') {
-        ajax_tree_view($vars);
+        ajax_tree_view($vars, $VERSION);
     }
 
 }

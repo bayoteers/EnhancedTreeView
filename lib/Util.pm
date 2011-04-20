@@ -90,8 +90,10 @@ sub GenerateTree {
 }
 
 sub show_tree_view {
-    my ($vars) = @_;
+    my ($vars, $VERSION) = @_;
     my $cgi = Bugzilla->cgi;
+
+    $vars->{'version'} = $VERSION;
 
     my @bug_ids = split(/[,]/, $cgi->param('bug_id'));
 
