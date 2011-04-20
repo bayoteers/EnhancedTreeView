@@ -289,16 +289,14 @@
       [% bugid = b_data.bugid %]
       [% ids = b_data.dependson_ids %]
 
-      <a href="show_bug.cgi?id=[% bugid %]">
-        [%- bugid %]
-        [%- IF ids.size -%]
-          [%- "</a>" -%] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ ids.size %])</a>,
-        [% ELSE %]
-          [%- "</a>" -%],
-        [% END %] 
+      [%- IF ids.size -%]
+        [% "${bugid}" FILTER bug_link(bugid) FILTER none %] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ ids.size %])</a>,
+      [% ELSE %]
+        [% "${bugid}" FILTER bug_link(bugid) FILTER none %],
+      [% END %] 
     [% END %] 
     <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% do_ids = b_data.dependson_ids.join(',') %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
-    </p>
+  </p>
 
     <p class="edit_mode">
       You can now drag and drop items around the tree. Use Ctrl+Drag/Drop to place the item in multiple parts of the tree.
