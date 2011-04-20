@@ -292,13 +292,12 @@
       <a href="show_bug.cgi?id=[% bugid %]">
         [%- bugid %]
         [%- IF ids.size -%]
-          [%- "</a>"%] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ (ids.size == 1) ? "one" : ids.size %])</a>,
-          [%+ IF hide_resolved %]open[% END %]
+          [%- "</a>" -%] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ ids.size %])</a>,
         [% ELSE %]
-          [%- "</a>" -%][%- (loop.count < loop.size) ? "," : '' %]
+          [%- "</a>" -%],
         [% END %] 
     [% END %] 
-    [%- "," %] <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
+    <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% do_ids = b_data.dependson_ids.join(',') %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
     </p>
 
     <p class="edit_mode">
