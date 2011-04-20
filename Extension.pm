@@ -59,6 +59,20 @@ sub enter_bug_url_fields {
     $vars->{'target_milestone'} = $cgi->param('target_milestone');
 }
 
+sub enter_bug_url_fields_cloned {
+    my ($self, $args) = @_;
+    my $vars = $args->{'vars'}; 
+    my $cgi = Bugzilla->cgi;
+
+    open (MYFILE, '>>/tmp/bz.txt');
+    print MYFILE "Bob".$cgi->param('dependson')."\n";
+    if ($cgi->param('dependson'))
+    {
+
+        $vars->{'dependson'} = $cgi->param('dependson');
+    }
+}
+
 
 sub page_before_template {
     my ($self, $args) = @_;
