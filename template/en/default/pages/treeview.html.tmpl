@@ -98,6 +98,11 @@
             forcePlaceholderSize: true,
             handle: 'span',
             helper: 'clone',
+//            helper: function (event, item)
+//            {
+//                var clone = item.clone();
+//                return clone.clone();
+//            },
             items: 'li',
             maxLevels: 30,
             opacity: .6,
@@ -111,6 +116,12 @@
             start: function (event, ui)
                 {
                     sortable_parent = ui.item.parents('li');
+                    // copy instead of move
+                    if (event.ctrlKey == true)
+                    {
+                        //ui.item.show();
+                        ui.item.clone().insertAfter(ui.item).show();
+                    }
                 },
 
             stop: function (event, ui)
@@ -285,7 +296,9 @@
 [% END %] 
     , <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.dependson_ids.join(',') %],[% b_data.bugid %],[% END %]">view all as bug list</a>
   </h3>
-
+    <span class='edit_mode'>
+        You can now Drag/Drop bugs. Ctrl+Drag/Drop keeps the original bug item.
+    </span>
     <ul class="tree sortable root no-nest">
     <li id='foo_0'><span></span>
     <ul >
