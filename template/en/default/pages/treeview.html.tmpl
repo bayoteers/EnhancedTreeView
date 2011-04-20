@@ -213,11 +213,19 @@
                         $('li[id^='+ui.item.attr('id')+']').each(function ()
                         {
                             var clone_link = $(this).find('.clone_link');
-                            var blocked_field = clone_link.attr('href').match('blocked=([0-9,]+)')[0];
-                            var new_blocked_field = blocked_field.replace(sortable_parent.attr('id').replace('bug_', ''), p_id.replace('bug_', ''));
                             // disabling link until saved
-                            clone_link.attr('hrefnew', clone_link.attr('href').replace(blocked_field, new_blocked_field));
-                            clone_link.removeAttr('href');
+                            if (clone_link.attr('href') != undefined)
+                            {
+                                var href = clone_link.attr('href');
+                                clone_link.removeAttr('href');
+                            } else
+                            {
+                                var href = clone_link.attr('hrefnew');
+                            }
+
+                            var blocked_field = href.match('blocked=([0-9,]+)')[0];
+                            var new_blocked_field = blocked_field.replace(sortable_parent.attr('id').replace('bug_', ''), p_id.replace('bug_', ''));
+                            clone_link.attr('hrefnew', href.replace(blocked_field, new_blocked_field));
 
                         });
                     }
