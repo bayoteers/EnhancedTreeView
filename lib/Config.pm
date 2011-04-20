@@ -19,11 +19,9 @@
 # Contributor(s):
 #   Eero Heino <eero.heino@nokia.com>
 
-
 package Bugzilla::Extension::TreeView::Config;
 use strict;
 use warnings;
-
 
 use Bugzilla::Config::Common;
 
@@ -32,12 +30,12 @@ sub get_param_list {
 
     my @param_list = (
                       {
-                         name    => 'treeview_inherited_attributes',
-                         desc    => 'Create bug: inherited options from the depends on bug',
-                         type    => 'm',
-                         choices => ['assigned_to', 'bug_severity', 'rep_platform'],
-                         default => []
-                       }
+                        name    => 'treeview_inherited_attributes',
+                        desc    => 'Create bug: inherited options from the depends on bug',
+                        type    => 'm',
+                        choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
+                        default => []
+                      }
                      );
     return @param_list;
 }

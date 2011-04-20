@@ -51,28 +51,26 @@ sub install_update_db {
 
 sub enter_bug_url_fields {
     my ($self, $args) = @_;
-    my $vars = $args->{'vars'}; 
-    my $cgi = Bugzilla->cgi;
+    my $vars = $args->{'vars'};
+    my $cgi  = Bugzilla->cgi;
 
-    $vars->{'dependson'} = $cgi->param('dependson');
-    $vars->{'blocks'} = $cgi->param('blocks');
+    $vars->{'dependson'}        = $cgi->param('dependson');
+    $vars->{'blocks'}           = $cgi->param('blocks');
     $vars->{'target_milestone'} = $cgi->param('target_milestone');
 }
 
 sub enter_bug_url_fields_cloned {
     my ($self, $args) = @_;
-    my $vars = $args->{'vars'}; 
-    my $cgi = Bugzilla->cgi;
+    my $vars = $args->{'vars'};
+    my $cgi  = Bugzilla->cgi;
 
-    open (MYFILE, '>>/tmp/bz.txt');
-    print MYFILE "Bob".$cgi->param('dependson')."\n";
-    if ($cgi->param('dependson'))
-    {
+    open(MYFILE, '>>/tmp/bz.txt');
+    print MYFILE "Bob" . $cgi->param('dependson') . "\n";
+    if ($cgi->param('dependson')) {
 
         $vars->{'dependson'} = $cgi->param('dependson');
     }
 }
-
 
 sub page_before_template {
     my ($self, $args) = @_;

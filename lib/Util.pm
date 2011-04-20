@@ -12,7 +12,7 @@
 #
 # The Original Code is the TreeView Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is Eero Heino 
+# The Initial Developer of the Original Code is Eero Heino
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
@@ -105,8 +105,7 @@ sub show_tree_view {
 
     $vars->{'bugs_data'} = [];
 
-    foreach my $bug_id (@bug_ids)
-    {
+    foreach my $bug_id (@bug_ids) {
         my $bug = Bugzilla::Bug->check($bug_id);
         my $id  = $bug->id;
 
@@ -130,13 +129,12 @@ sub show_tree_view {
         $bug_data{'bugid'}         = $id;
         $bug_data{'maxdepth'}      = $maxdepth;
         $bug_data{'hide_resolved'} = $hide_resolved;
-        $bug_data{'allfields'} = $bug->fields();
+        $bug_data{'allfields'}     = $bug->fields();
 
         use Storable qw(dclone);
 
-        push (@{$vars->{'bugs_data'}}, dclone(\%bug_data) );
+        push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
     }
-
 
 }
 
@@ -145,8 +143,8 @@ sub ajax_tree_view {
 
     use JSON;
 
-    my $cgi    = Bugzilla->cgi;
-    my $dbh = Bugzilla->dbh;
+    my $cgi  = Bugzilla->cgi;
+    my $dbh  = Bugzilla->dbh;
     my $json = new JSON::XS;
 
     my $data = $cgi->param('tree');
@@ -160,51 +158,43 @@ sub ajax_tree_view {
     my %rel_data = ();
 
     # collect all dependecies for a bug
-    for my $bug_data (@{$content})
-    {
+    for my $bug_data (@{$content}) {
         #  and $bug_data->{'parent_id'} ne 'root'
-        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0')
-        {
+        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0') {
             my $found = 0;
-            foreach my $bid (keys %rel_data)
-            {
+            foreach my $bid (keys %rel_data) {
                 # depends on
-                if($bid eq $bug_data->{'item_id'}) {
+                if ($bid eq $bug_data->{'item_id'}) {
                     $found = 1;
-                    push(@{$rel_data{ $bug_data->{'item_id'} }[1]}, $bug_data->{'parent_id'});
+                    push(@{ $rel_data{ $bug_data->{'item_id'} }[1] }, $bug_data->{'parent_id'});
                     last;
                 }
             }
-            if (not $found)
-            {
-                @{$rel_data{ $bug_data->{'item_id'} }} = ([], [$bug_data->{'parent_id'}]);
+            if (not $found) {
+                @{ $rel_data{ $bug_data->{'item_id'} } } = ([], [ $bug_data->{'parent_id'} ]);
             }
 
-            if ($bug_data->{'parent_id'} ne '0' and $bug_data->{'parent_id'} ne 'root')
-            {
+            if ($bug_data->{'parent_id'} ne '0' and $bug_data->{'parent_id'} ne 'root') {
                 $found = 0;
-                foreach my $bid (keys %rel_data)
-                {
+                foreach my $bid (keys %rel_data) {
                     # blocks on
-                    if($bid eq $bug_data->{'parent_id'}) {
+                    if ($bid eq $bug_data->{'parent_id'}) {
                         $found = 1;
-                        push(@{$rel_data{ $bug_data->{'parent_id'} }[0]}, $bug_data->{'item_id'});
+                        push(@{ $rel_data{ $bug_data->{'parent_id'} }[0] }, $bug_data->{'item_id'});
                         last;
                     }
                 }
-                if (not $found)
-                {
-                    @{$rel_data{ $bug_data->{'parent_id'} }} = ([$bug_data->{'item_id'}], []);
+                if (not $found) {
+                    @{ $rel_data{ $bug_data->{'parent_id'} } } = ([ $bug_data->{'item_id'} ], []);
                 }
             }
         }
     }
     #my $timestamp = $dbh->selectrow_array(q{SELECT LOCALTIMESTAMP(0)});
-    for my $bid ( keys %rel_data ) {
-        my (@blocks, @depends) = @{$rel_data{$bid}};
+    for my $bid (keys %rel_data) {
+        my (@blocks, @depends) = @{ $rel_data{$bid} };
 
-        if (@depends and (scalar $depends[0] == 0 or $depends[0] == 'root'))
-        {
+        if (@depends and (scalar $depends[0] == 0 or $depends[0] == 'root')) {
             @depends = [];
         }
         my $bug = Bugzilla::Bug->new($bid);
@@ -214,9 +204,7 @@ sub ajax_tree_view {
         $bug->update();
     }
 
-
     $vars->{'json_text'} = 'hello';
 }
-
 
 1;
