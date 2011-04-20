@@ -20,8 +20,6 @@
   #%]
 
 
-[%#   javascript_urls = ["js/expanding-tree.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js", "extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js", "extensions/TreeView/web/js/treeview.js"] #%]
-
 [% PROCESS 'global/field-descs.none.tmpl' %]
 
 [% filtered_desc = blocked_tree.$bugid.short_desc FILTER html %]
@@ -37,13 +35,11 @@
 
 %]
 
+<h1>Bugzilla Advanced TreeView</h1>
+
 [% PROCESS depthControlToolbar %]
 
 [% INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
-
-[%# INCLUDE tree_section_g ids=b_data.dependson_ids type=2 bsdata = bugs_data #%]
-
-[%# INCLUDE tree_section ids=b_data.dependson_ids type=1 dependson_tree=b_data.dependson_tree blocked_tree=b_data.blocked_tree blocked_ids=b_data.blocked_ids realdepth=b_data.realdepth bugid=b_data.bugid maxdepth=b_data.maxdepth hide_resolved=b_data.hide_resolved #%]
 
 [% PROCESS depthControlToolbar %]
 
@@ -54,7 +50,7 @@
 <script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
 <script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js?v=[% version %]"></script>
 
-  <script>
+<script type="text/javascript">
     var original_tree = [];
     var sortable_parent = null;
     var sortable_copy = false;
@@ -272,7 +268,7 @@
         });
     original_tree = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
     });
-  </script>
+</script>
 
 [% BLOCK tree_section_g %]
   [%# INTERFACE
@@ -283,65 +279,52 @@
     #%]
   [% global.seen = {} %]
   [%# Display the tree of bugs that this bug depends on. %]
-  <h3>
-    Dependencies:
-[% FOREACH b_data IN bugs_data %]
-    [%+ (loop.count > 1) ? "," : '' %]
-    [% bugid = b_data.bugid %]
-    [% ids = b_data.dependson_ids %]
-    <a href="show_bug.cgi?id=[% bugid %]">
-      [% IF loop.count == 1 %]
-        [% terms.Bug %]
-      [% END %]
-      [%+ bugid %]
-    </a>
-    [% IF type == 1 %]
-        [% tree_name = "dependson_tree" %]
-        [% IF ids.size %]
+
+  <p>
+    Bugs Shown:
+
+    [% tree_name = "dependson_tree" %]
+
+    [% FOREACH b_data IN bugs_data %]
+      [% bugid = b_data.bugid %]
+      [% ids = b_data.dependson_ids %]
+
+      <a href="show_bug.cgi?id=[% bugid %]">
+        [%- bugid %]
+        [%- IF ids.size -%]
+          [%- "</a>"%] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ (ids.size == 1) ? "one" : ids.size %])</a>,
+          [%+ IF hide_resolved %]open[% END %]
         [% ELSE %]
-        [% END %]
-    [% ELSIF type == 2 %]
-        [% tree_name = "blocked_tree" %]
-        [% IF ids.size %] 
-        [% ELSE %]
-        [% END %]
-    [% END %]
-    [% IF ids.size %]
-       <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ (ids.size == 1) ? "one" : ids.size %])</a>
-        [%+ IF hide_resolved %]open[% END %]
+          [%- "</a>" -%][%- (loop.count < loop.size) ? "," : '' %]
+        [% END %] 
     [% END %] 
-    [% IF maxdepth -%]Up to [% maxdepth %] level[% "s" IF maxdepth > 1 %] deep | [% END -%]
-    [% IF user.in_group('editbugs') && ids.size > 1 %]
-    <!-- <a href="buglist.cgi?bug_id=[% ids.join(",") %]&amp;tweak=1">change several</a> -->
-    [% END %]
-[% END %] 
-    , <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.dependson_ids.join(',') %],[% b_data.bugid %],[% END %]">view all as bug list</a>
-  </h3>
-    <span class='edit_mode'>
-        You can now Drag/Drop bugs. Ctrl+Drag/Drop keeps the original bug item.
-    </span>
+    [%- "," %] <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
+    </p>
+
+    <p class="edit_mode">
+      You can now drag and drop items around the tree. Use Ctrl+Drag/Drop to place the item in multiple parts of the tree.
+    </p>
+
     <ul class="tree sortable root no-nest" id='root'>
-    <li id='foo_0'><span></span>
-    <ul >
-[% FOREACH b_data IN bugs_data %]
-    [% dependson_tree = b_data.dependson_tree %]
-    [% ids = b_data.dependson_ids %]
-    [% dependson_tree=b_data.dependson_tree %]
-    [% blocked_tree=b_data.blocked_tree %]
-    [% blocked_ids=b_data.blocked_ids %]
-    [% realdepth=b_data.realdepth %]
-    [% bugid=b_data.bugid %]
-    [% maxdepth=b_data.maxdepth %]
-    [% hide_resolved=b_data.hide_resolved %]
+      <li id='foo_0'><span></span>
+        <ul>
+          [% FOREACH b_data IN bugs_data %]
+            [% dependson_tree = b_data.dependson_tree %]
+            [% ids = b_data.dependson_ids %]
+            [% dependson_tree=b_data.dependson_tree %]
+            [% blocked_tree=b_data.blocked_tree %]
+            [% blocked_ids=b_data.blocked_ids %]
+            [% realdepth=b_data.realdepth %]
+            [% bugid=b_data.bugid %]
+            [% maxdepth=b_data.maxdepth %]
+            [% hide_resolved=b_data.hide_resolved %]
 
-      [% INCLUDE display_tree tree=$tree_name %]
-[% END %]
+            [% INCLUDE display_tree tree=$tree_name %]
+          [% END %]
+        </ul>
+      </li>
     </ul>
-    </li></ul>
-
 [% END %]
-
-
 
 [%###########################################################################%]
 [%# Tree-drawing blocks                                                     #%]
