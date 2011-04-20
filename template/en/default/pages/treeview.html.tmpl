@@ -57,6 +57,7 @@
   <script>
     var original_tree = [];
     var sortable_parent = null;
+    var sortable_copy = false;
     $(document).ready(function() {
 
         $('.edit_mode').hide();
@@ -98,11 +99,6 @@
             forcePlaceholderSize: true,
             handle: 'span',
             helper: 'clone',
-//            helper: function (event, item)
-//            {
-//                var clone = item.clone();
-//                return clone.clone();
-//            },
             items: 'li',
             maxLevels: 30,
             opacity: .6,
@@ -121,6 +117,7 @@
                     {
                         //ui.item.show();
                         ui.item.clone().insertAfter(ui.item).show();
+                        sortable_copy = true;
                     }
                 },
 
@@ -233,13 +230,37 @@
                             {
                                 var href = clone_link.attr('hrefnew');
                             }
-
-                            var blocked_field = href.match('blocked=([0-9,]+)')[0];
-                            var new_blocked_field = blocked_field.replace(sortable_parent.attr('id').replace('bug_', ''), p_id.replace('bug_', ''));
-                            clone_link.attr('hrefnew', href.replace(blocked_field, new_blocked_field));
-
+                            var sortable_parent_id = sortable_parent.attr('id').replace('bug_', '');
+                            var blocked_field = href.match('blocked=([0-9,]+)')
+                            p_id = p_id.replace('bug_', '');
+                            if (p_id == 'foo_0' || p_id == 'root')
+                            {
+                                p_id = '';
+                            }
+                            if (blocked_field)
+                            {
+                                blocked_field = blocked_field[0];
+                                // copying so no need to overwrite the previous blocked
+                                if (sortable_copy)
+                                {
+                                    var new_blocked_field = blocked_field + p_id + ',';
+                                } else
+                                {
+                                    var new_blocked_field = blocked_field.replace(sortable_parent_id, p_id);
+                                }
+                                new_blocked_field = new_blocked_field.replace(',,', ',');
+                                clone_link.attr('hrefnew', href.replace(blocked_field, new_blocked_field));
+                            // didn't have a real parent until now
+                            } else if (href.match('blocked=') && p_id != 'foo_0' && p_id != 'root')
+                            {
+                                alert('bau');
+                                clone_link.attr('hrefnew', href.replace('blocked=', 'blocked='+p_id));
+                            }
                         });
                     }
+
+                    sortable_copy = false;
+
                     item_a_node = $(parent_li.find('span').find('a').get(0));
                     if (p_id && p_id != 'foo_0' && p_id != 'root')
                     {
@@ -299,7 +320,7 @@
     <span class='edit_mode'>
         You can now Drag/Drop bugs. Ctrl+Drag/Drop keeps the original bug item.
     </span>
-    <ul class="tree sortable root no-nest">
+    <ul class="tree sortable root no-nest" id='root'>
     <li id='foo_0'><span></span>
     <ul >
 [% FOREACH b_data IN bugs_data %]
