@@ -56,47 +56,50 @@ function compare_associative_arrays(a, b)
 
 
 // save
-$('#save_tree').click(function(e)
+$('.save_tree').each(function ()
 {
-    var arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
-
-    var changed = [];
-
-    for (var i=0; i < arraied.length; i++)
+    $(this).click(function(e)
     {
-        var found = false;
-        for (var k=0; k < original_tree.length; k++)
+        var arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
+
+        var changed = [];
+
+        for (var i=0; i < arraied.length; i++)
         {
-            if (compare_associative_arrays(arraied[i], original_tree[k]))
+            var found = false;
+            for (var k=0; k < original_tree.length; k++)
             {
-                found = true;
-                break;
+                if (compare_associative_arrays(arraied[i], original_tree[k]))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                changed.push(arraied[i]);
             }
         }
-        if (!found)
-        {
-            changed.push(arraied[i]);
-        }
-    }
 
-    $.post('page.cgi?id=treeview_ajax.html',
-        {
-            tree: JSON.stringify(changed),
-        },
-        function ()
-        {
-            alert('Tree Saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
-
-            $('#cancel_edit_mode').attr('disabled', 'disabled');
-            $('#save_tree').attr('disabled', 'disabled');
-            $('a[hrefnew]').each(function ()
+        $.post('page.cgi?id=treeview_ajax.html',
             {
-                elem = $(this);
-                elem.attr('href', elem.attr('hrefnew'));
-                elem.removeAttr('hrefnew');
-            });
-        },
-        'json');
+                tree: JSON.stringify(changed),
+            },
+            function ()
+            {
+                alert('Tree Saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
+
+                $('#cancel_edit_mode').attr('disabled', 'disabled');
+                $('#save_tree').attr('disabled', 'disabled');
+                $('a[hrefnew]').each(function ()
+                {
+                    elem = $(this);
+                    elem.attr('href', elem.attr('hrefnew'));
+                    elem.removeAttr('hrefnew');
+                });
+            },
+            'json');
+    });
 });
 
 

@@ -60,9 +60,8 @@
     $(document).ready(function() {
 
         $('.edit_mode').hide();
-        $('#enable_edit_mode').each(function()
+        $('.enable_edit_mode').each(function()
             {
-
                 $(this).click(function()
                     {
                         $('.edit_mode').toggle();
@@ -202,8 +201,14 @@
 
                     if (!reverted)
                     {
-                        $('#cancel_edit_mode').removeAttr('disabled');
-                        $('#save_tree').removeAttr('disabled');
+                        $('.cancel_edit_mode').each(function ()
+                        {
+                            $(this).removeAttr('disabled');
+                        });
+                        $('.save_tree').each(function ()
+                        {
+                            $(this).removeAttr('disabled');
+                        });
                         // replace the old parent with the new one for the clone link in all instances of this moved bug
                         $('li[id^='+ui.item.attr('id')+']').each(function ()
                         {
@@ -537,12 +542,12 @@
    </td>
 
     <td class='read_mode'>
-        <input type='button' id='enable_edit_mode' value='Enable Edit Mode' />
+        <input type='button' class='enable_edit_mode' value='Enable Edit Mode' />
     </td>
 
     <td class='edit_mode'>
-        <input type='button' disabled='disabled' id='cancel_edit_mode' value='Cancel' onclick="history.go(0)" />
-        <input type='button' disabled='disabled' id='save_tree' value='Save Tree' />
+        <input type='button' disabled='disabled' class='cancel_edit_mode' value='Cancel' onclick="history.go(0)" />
+        <input type='button' disabled='disabled' class='save_tree' value='Save Tree' />
     </td>
     <td class='loading_element'>
         <img src='extensions/TreeView/web/ajax-loader.gif' />
