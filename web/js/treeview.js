@@ -66,6 +66,7 @@ $('.save_tree').each(function ()
         var unchanged = [];
 
         var touched_bugs = [];
+        var touched_parents = [];
 
         for (var i=0; i < arraied.length; i++)
         {
@@ -88,6 +89,11 @@ $('.save_tree').each(function ()
                 {
                     touched_bugs.push(arraied[i]['item_id']);
                 }
+                if ($.inArray(arraied[i]['parent_id'], touched_parents) == -1)
+                {
+                    touched_parents.push(arraied[i]['parent_id']);
+                }
+
             } else
             {
                 unchanged.push(arraied[i]);
@@ -97,7 +103,7 @@ $('.save_tree').each(function ()
         // loop through and also send the data that didn't change for a bug that had changes
         for (var i=0; i < unchanged.length; i++)
         {
-            if ($.inArray(unchanged[i]['item_id'], touched_bugs) > -1)
+            if ($.inArray(unchanged[i]['item_id'], touched_bugs) > -1 || $.inArray(unchanged[i]['item_id'], touched_parents) > -1)
             {
                 changed.push(unchanged[i]);
             }
@@ -109,10 +115,12 @@ $('.save_tree').each(function ()
             },
             function ()
             {
-                alert('Tree Saved'); original_tree = $.extend(true, [], arraied); $('.edited').hide();
+                alert('Tree Saved');
+                original_tree = $.extend(true, [], arraied);
+                $('.edited').hide();
 
-                $('#cancel_edit_mode').attr('disabled', 'disabled');
-                $('#save_tree').attr('disabled', 'disabled');
+                $('.cancel_edit_mode').attr('disabled', 'disabled');
+                $('.save_tree').attr('disabled', 'disabled');
                 $('a[hrefnew]').each(function ()
                 {
                     elem = $(this);
