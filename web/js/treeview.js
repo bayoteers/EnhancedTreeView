@@ -63,10 +63,14 @@ $('.save_tree').each(function ()
         var arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
 
         var changed = [];
+        var unchanged = [];
+
+        var touched_bugs = [];
 
         for (var i=0; i < arraied.length; i++)
         {
             var found = false;
+
             for (var k=0; k < original_tree.length; k++)
             {
                 if (compare_associative_arrays(arraied[i], original_tree[k]))
@@ -75,9 +79,27 @@ $('.save_tree').each(function ()
                     break;
                 }
             }
+
             if (!found)
             {
+                // sending to server
                 changed.push(arraied[i]);
+                if ($.inArray(arraied[i]['item_id'], touched_bugs) == -1)
+                {
+                    touched_bugs.push(arraied[i]['item_id']);
+                }
+            } else
+            {
+                unchanged.push(arraied[i]);
+            }
+        }
+
+        // loop through and also send the data that didn't change for a bug that had changes
+        for (var i=0; i < unchanged.length; i++)
+        {
+            if ($.inArray(unchanged[i]['item_id'], touched_bugs) > -1)
+            {
+                changed.push(unchanged[i]);
             }
         }
 
