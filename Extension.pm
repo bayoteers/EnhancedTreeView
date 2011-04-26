@@ -55,7 +55,7 @@ sub enter_bug_url_fields {
     my $cgi = Bugzilla->cgi;
 
     $vars->{'dependson'} = $cgi->param('dependson');
-    $vars->{'blocks'} = $cgi->param('blocks');
+    $vars->{'blocked'} = $cgi->param('blocked');
     $vars->{'target_milestone'} = $cgi->param('target_milestone');
 }
 
@@ -64,13 +64,19 @@ sub enter_bug_url_fields_cloned {
     my $vars = $args->{'vars'}; 
     my $cgi = Bugzilla->cgi;
 
-    open (MYFILE, '>>/tmp/bz.txt');
-    print MYFILE "Bob".$cgi->param('dependson')."\n";
-    if ($cgi->param('dependson'))
+    if (defined $cgi->param('dependson'))
     {
 
         $vars->{'dependson'} = $cgi->param('dependson');
     }
+
+    if (defined $cgi->param('blocked'))
+    {
+
+        $vars->{'blocked'} = $cgi->param('blocked');
+    }
+
+
 }
 
 
