@@ -31,7 +31,6 @@ our @EXPORT = qw(
 
   );
 
-#local our $maxdepth = $cgi->param('maxdepth') || 0;
 local our $maxdepth      = 0;
 local our $hide_resolved = 0;
 if ($maxdepth !~ /^\d+$/) { $maxdepth = 0 }
@@ -103,6 +102,10 @@ sub show_tree_view {
 
     $vars->{'hide_resolved'} = $hide_resolved;
 
+    $vars->{'bug_id_list'} = $cgi->param('bug_id');
+
+    local our $maxdepth = $cgi->param('maxdepth') || 0;
+
     $vars->{'bugs_data'} = [];
 
     foreach my $bug_id (@bug_ids) {
@@ -124,8 +127,6 @@ sub show_tree_view {
         $bug_data{'blocked_tree'} = $blocked_tree;
         $bug_data{'blocked_ids'}  = [ keys(%$blocked_ids) ];
 
-        $bug_data{'realdepth'} = $realdepth;
-
         $bug_data{'bugid'}         = $id;
         $bug_data{'maxdepth'}      = $maxdepth;
         $bug_data{'hide_resolved'} = $hide_resolved;
@@ -135,7 +136,8 @@ sub show_tree_view {
 
         push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
     }
-
+    $vars->{'realdepth'} = $realdepth;
+    $vars->{'maxdepth'}       = $maxdepth;
 }
 
 sub ajax_tree_view {
