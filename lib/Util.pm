@@ -137,7 +137,7 @@ sub show_tree_view {
         push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
     }
     $vars->{'realdepth'} = $realdepth;
-    $vars->{'maxdepth'}       = $maxdepth;
+    $vars->{'maxdepth'}  = $maxdepth;
 }
 
 sub ajax_tree_view {

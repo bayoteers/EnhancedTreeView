@@ -55,7 +55,7 @@ sub enter_bug_url_fields {
     my $cgi  = Bugzilla->cgi;
 
     $vars->{'dependson'} = $cgi->param('dependson');
-    $vars->{'blocked'} = $cgi->param('blocked');
+    $vars->{'blocked'}   = $cgi->param('blocked');
 }
 
 sub enter_bug_url_fields_cloned {
@@ -63,13 +63,11 @@ sub enter_bug_url_fields_cloned {
     my $vars = $args->{'vars'};
     my $cgi  = Bugzilla->cgi;
 
-    if (defined $cgi->param('dependson'))
-    {
+    if (defined $cgi->param('dependson')) {
         $vars->{'dependson'} = $cgi->param('dependson');
     }
 
-    if (defined $cgi->param('blocked'))
-    {
+    if (defined $cgi->param('blocked')) {
 
         $vars->{'blocked'} = $cgi->param('blocked');
     }
