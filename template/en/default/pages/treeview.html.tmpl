@@ -124,7 +124,7 @@
                     var reverted = false;
                     function revert()
                     {
-                        alert('refusing dependency loop');
+                        alert('This would cause a dependency loop');
                         tree.sortable('cancel');
                         reverted = true;
                     }
