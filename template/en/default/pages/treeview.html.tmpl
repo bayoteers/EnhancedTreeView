@@ -228,10 +228,12 @@
                             }
                             var sortable_parent_id = sortable_parent.attr('id').replace('bug_', '');
                             var blocked_field = href.match('blocked=([0-9,]+)')
-                            p_id = p_id.replace('bug_', '');
-                            if (p_id == 'foo_0' || p_id == 'root')
+                            if (p_id == 'foo_0' || p_id == 'root' || p_id == undefined)
                             {
                                 p_id = '';
+                            } else
+                            {
+                                p_id = p_id.replace('bug_', '');
                             }
                             if (blocked_field)
                             {
@@ -424,14 +426,15 @@
 [% BLOCK bullet %]
   [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
     [% extra_class = " b_open" %]
-    [%# extra_args = 'onclick="return doToggle(this, event);"' #%] 
-    [%# extra_args = 'onclick="$(this).parent().next(\'ul\').toggle(); $(this).toggleClass(\'b_open\').toggleClass(\'b_closed\');"' #%] 
     [% extra_args = 'onclick="expclo(this);"' %]
   [% END %]
   <a name="b[% bugid %]" 
      class="b [%+ extra_class FILTER none %]"
-     title="Click to expand or contract this portion of the tree. Hold down the Ctrl key while clicking to expand or contract all subtrees."
-     [% extra_args FILTER none %]>&nbsp;&nbsp;</a>
+    style='a:hover
+{ 
+font-size: 400%;
+}'
+     title="Click to expand or contract this portion of the tree." [% extra_args FILTER none %]>&nbsp;&nbsp;</a>
 [% END %]
 
 [% BLOCK buglink %]

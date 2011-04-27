@@ -26,7 +26,7 @@ use base qw(Bugzilla::Extension);
 # This code for this is in ./extensions/TreeView/lib/Util.pm
 use Bugzilla::Extension::TreeView::Util;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub config {
     my ($self, $args) = @_;
