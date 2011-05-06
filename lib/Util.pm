@@ -12,7 +12,7 @@
 #
 # The Original Code is the TreeView Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is Eero Heino
+# The Initial Developer of the Original Code is "Nokia Corpodation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #

@@ -12,7 +12,7 @@
 #
 # The Original Code is the TreeView Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is Eero Heino
+# The Initial Developer of the Original Code is "Nokia Corpodation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
@@ -40,6 +40,15 @@ sub config_add_panels {
 
     my $modules = $args->{panel_modules};
     $modules->{TreeView} = "Bugzilla::Extension::TreeView::Config";
+}
+
+sub object_end_of_create {
+    my ($self, $args) = @_;
+    open (MYFILE, '>>/tmp/bz.txt');
+    print MYFILE "class foasdf \n";
+    my ($class, $obj) = $args;
+    print MYFILE 'class '.$class."\n";
+    
 }
 
 # See the documentation of Bugzilla::Hook ("perldoc Bugzilla::Hook"
