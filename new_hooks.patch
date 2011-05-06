@@ -19,25 +19,25 @@
 # Contributor(s):
 #   Eero Heino <eero.heino@nokia.com>
 
-package Bugzilla::Extension::TreeView::Config;
-use strict;
-use warnings;
 
-use Bugzilla::Config::Common;
-
-sub get_param_list {
-    my ($class) = @_;
-
-    my @param_list = (
-                      {
-                        name    => 'treeview_inherited_attributes',
-                        desc    => 'Create bug: inherited options from the depends on bug',
-                        type    => 'm',
-                        choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
-                        default => []
-                      }
-                     );
-    return @param_list;
-}
-
-1;
+diff --git a/enter_bug.cgi b/enter_bug.cgi
+index c03a14e..16945dc 100755
+--- a/enter_bug.cgi
++++ b/enter_bug.cgi
+@@ -402,6 +404,7 @@ $vars->{'cloned_bug_id'}         = $cloned_bug_id;
+ 
+ $vars->{'token'}             = issue_session_token('createbug:');
+ 
++Bugzilla::Hook::process("enter_bug_url_fields", { vars => $vars });
+ 
+ my @enter_bug_fields = grep { $_->enter_bug } Bugzilla->active_custom_fields;
+ foreach my $field (@enter_bug_fields) {
+@@ -483,6 +486,8 @@ if ($cloned_bug_id) {
+         $vars->{$field_name} = $cloned_bug->$field_name;
+     }
+ 
++    Bugzilla::Hook::process("enter_bug_url_fields_cloned", { vars => $vars });
++
+     # We need to ensure that we respect the 'insider' status of
+     # the first comment, if it has one. Either way, make a note
+     # that this bug was cloned from another bug.
