@@ -9,9 +9,9 @@
    implied. See the License for the specific language governing
    rights and limitations under the License.
   
-   The Original Code is the TreeView Bugzilla Extension.
+   The Original Code is the Advanced Treeview Bugzilla Extension.
   
-   The Initial Developer of the Original Code is "Nokia Corpodation"
+   The Initial Developer of the Original Code is "Nokia Corporation"
    Portions created by the Initial Developer are Copyright (C) 2011 the
    Initial Developer. All Rights Reserved.
   
