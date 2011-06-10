@@ -19,7 +19,7 @@
 # Contributor(s):
 #   Eero Heino <eero.heino@nokia.com>
 
-package Bugzilla::Extension::TreeView::Util;
+package Bugzilla::Extension::EnhancedTreeView::Util;
 use strict;
 use base qw(Exporter);
 
@@ -98,7 +98,7 @@ sub show_tree_view {
 
     local our $hide_resolved = $cgi->param('hide_resolved') ? 1 : 0;
 
-    $vars->{'inherited_fields'} = Bugzilla->params->{"treeview_inherited_attributes"};
+    $vars->{'inherited_fields'} = Bugzilla->params->{"enhancedtreeview_inherited_attributes"};
 
     $vars->{'hide_resolved'} = $hide_resolved;
 

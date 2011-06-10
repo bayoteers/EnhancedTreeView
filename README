@@ -1,10 +1,10 @@
-BAT - Bugzilla Advanced TreeView
+EnhancedTreeView
 ================================
 
-BAT looks like Bugzilla's 'showdependencytree.cgi' page with added functionality:
+EnhancedTreeView looks like Bugzilla's 'showdependencytree.cgi' page with added functionality:
 The extension gives you a tree view of dependencies and blockers of a given set of bugs.
 
-BAT's features:
+EnhancedTreeView's features:
  - show multiple trees
  - allow changing dependencies, drag and drop
  - allow creating more dependencies, ctrl + drag and drop
@@ -19,9 +19,9 @@ BAT's features:
 CONFIGURATION:
 ================================
 
-Install BAT directory under <bugzilla directory>/extensions/BAT
+Install EnhancedTreeView directory under <bugzilla directory>/extensions/EnhancedTreeView
 
 patch your bugzilla with:
 cd <bugzilla directory>
-patch < <where BAT is>/new_hooks.patch
+patch < <where EnhancedTreeView is>/new_hooks.patch
 

@@ -19,12 +19,12 @@
 # Contributor(s):
 #   Eero Heino <eero.heino@nokia.com>
 
-package Bugzilla::Extension::TreeView;
+package Bugzilla::Extension::EnhancedTreeView;
 use strict;
 use base qw(Bugzilla::Extension);
 
-# This code for this is in ./extensions/TreeView/lib/Util.pm
-use Bugzilla::Extension::TreeView::Util;
+# This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
+use Bugzilla::Extension::EnhancedTreeView::Util;
 
 our $VERSION = '0.03';
 
@@ -32,22 +32,19 @@ sub config {
     my ($self, $args) = @_;
 
     my $config = $args->{config};
-    $config->{TreeView} = "Bugzilla::Extension::TreeView::Config";
+    $config->{EnhancedTreeView} = "Bugzilla::Extension::TreeView::Config";
 }
 
 sub config_add_panels {
     my ($self, $args) = @_;
 
     my $modules = $args->{panel_modules};
-    $modules->{TreeView} = "Bugzilla::Extension::TreeView::Config";
+    $modules->{EnhancedTreeView} = "Bugzilla::Extension::TreeView::Config";
 }
 
 sub object_end_of_create {
     my ($self, $args) = @_;
-    open (MYFILE, '>>/tmp/bz.txt');
-    print MYFILE "class foasdf \n";
     my ($class, $obj) = $args;
-    print MYFILE 'class '.$class."\n";
     
 }
 
@@ -90,10 +87,10 @@ sub page_before_template {
     # User is stored as variable for user authorization
     $vars->{'user'} = Bugzilla->user;
 
-    if ($page eq 'treeview.html') {
+    if ($page eq 'EnhancedEnhancedTreeView.html') {
         show_tree_view($vars, $VERSION);
     }
-    if ($page eq 'treeview_ajax.html') {
+    if ($page eq 'EnhancedEnhancedTreeView_ajax.html') {
         ajax_tree_view($vars, $VERSION);
     }
 

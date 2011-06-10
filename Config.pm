@@ -20,10 +20,10 @@
 # Contributor(s):
 #   Eero Heino <eero.heino@nokia.com>
 
-package Bugzilla::Extension::TreeView;
+package Bugzilla::Extension::EnhancedTreeView;
 use strict;
 
-use constant NAME => 'TreeView';
+use constant NAME => 'EnhancedTreeView';
 
 use constant REQUIRED_MODULES => [];
 
