@@ -32,14 +32,14 @@ sub config {
     my ($self, $args) = @_;
 
     my $config = $args->{config};
-    $config->{EnhancedTreeView} = "Bugzilla::Extension::TreeView::Config";
+    $config->{EnhancedTreeView} = "Bugzilla::Extension::EnhancedTreeView::Config";
 }
 
 sub config_add_panels {
     my ($self, $args) = @_;
 
     my $modules = $args->{panel_modules};
-    $modules->{EnhancedTreeView} = "Bugzilla::Extension::TreeView::Config";
+    $modules->{EnhancedTreeView} = "Bugzilla::Extension::EnhancedTreeView::Config";
 }
 
 sub object_end_of_create {
@@ -87,10 +87,10 @@ sub page_before_template {
     # User is stored as variable for user authorization
     $vars->{'user'} = Bugzilla->user;
 
-    if ($page eq 'EnhancedEnhancedTreeView.html') {
+    if ($page eq 'EnhancedTreeView.html') {
         show_tree_view($vars, $VERSION);
     }
-    if ($page eq 'EnhancedEnhancedTreeView_ajax.html') {
+    if ($page eq 'EnhancedTreeView_ajax.html') {
         ajax_tree_view($vars, $VERSION);
     }
 

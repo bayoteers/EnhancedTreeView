@@ -28,14 +28,14 @@
    header          = "Dependency tree for 
                       <a href=\"show_bug.cgi?id=$bugid\">$terms.Bug $bugid</a>"
    javascript_urls = ["js/expanding-tree.js"]
-   style_urls      = ["skins/standard/dependency-tree.css", "extensions/TreeView/web/css/treeview.css?v=$version"]
+   style_urls      = ["skins/standard/dependency-tree.css", "extensions/EnhancedTreeView/web/css/treeview.css?v=$version"]
 
    subheader      = filtered_desc
    doc_section = "hintsandtips.html#dependencytree"
 
 %]
 
-<h1>Bugzilla Advanced TreeView</h1>
+<h1>EnhancedTreeView</h1>
 
 [% PROCESS depthControlToolbar %]
 
@@ -45,10 +45,10 @@
 
 [% PROCESS global/footer.html.tmpl %]
 
-<script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
-<script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
-<script type="text/JavaScript" src="extensions/TreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
-<script type="text/JavaScript" src="extensions/TreeView/web/js/treeview.js?v=[% version %]"></script>
+<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
+<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
+<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
+<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/EnhancedTreeView.js?v=[% version %]"></script>
 
 <script type="text/javascript">
     var original_tree = [];
@@ -578,7 +578,7 @@ font-size: 400%;
         <input type='button' disabled='disabled' class='save_tree' value='Save Tree' />
     </td>
     <td class='loading_element'>
-        <img src='extensions/TreeView/web/ajax-loader.gif' />
+        <img src='extensions/EnhancedTreeView/web/ajax-loader.gif' />
     </td>
  </tr>
 </table>
