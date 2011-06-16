@@ -19,4 +19,4 @@
   #   Eero Heino <eero.heino@nokia.com>
   #%]
 
-<a href="page.cgi?id=EnhancedTreeView.html&bug_id=[% FOREACH b IN bugs %][% b.bug_id %][% IF b.count < b.size %],[% END %][% END %]">EnhancedTreeView</a> |
+<a href="page.cgi?id=EnhancedTreeView.html&bug_id=[% FOREACH b IN bugs %][% b.bug_id %][% IF loop.count < loop.size %],[% END %][% END %]">Enhanced TreeView</a> |
