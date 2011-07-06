@@ -109,7 +109,7 @@ $('.save_tree').each(function ()
             }
         }
 
-        $.post('page.cgi?id=treeview_ajax.html',
+        $.post('page.cgi?id=EnhancedTreeView_ajax.html',
             {
                 tree: JSON.stringify(changed),
             },

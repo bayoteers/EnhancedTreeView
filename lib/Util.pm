@@ -197,11 +197,11 @@ sub ajax_tree_view {
     if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
     {
         # Old mail_delivery_method choices contained no uppercase characters
-        if (exists Bugzilla->param->{'mail_delivery_method'}
-            && Bugzilla->param->{'mail_delivery_method'} !~ /[A-Z]/)
+        if (exists Bugzilla->params->{'mail_delivery_method'}
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
         {
-            $mail_delivery_method = Bugzilla->param->{'mail_delivery_method'};
-            Bugzilla->param->{'mail_delivery_method'} = 'None';
+            $mail_delivery_method = Bugzilla->params->{'mail_delivery_method'};
+            Bugzilla->params->{'mail_delivery_method'} = 'None';
         }
     }
 
@@ -222,10 +222,10 @@ sub ajax_tree_view {
 
     if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
     {
-        if (exists Bugzilla->param->{'mail_delivery_method'}
-            && Bugzilla->param->{'mail_delivery_method'} !~ /[A-Z]/)
+        if (exists Bugzilla->params->{'mail_delivery_method'}
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
         {
-            Bugzilla->param->{'mail_delivery_method'} = $mail_delivery_method;
+            Bugzilla->params->{'mail_delivery_method'} = $mail_delivery_method;
         }
     }
 
