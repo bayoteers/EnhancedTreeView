@@ -43,9 +43,9 @@ sub config_add_panels {
 }
 
 sub object_end_of_create {
-    my ($self,  $args) = @_;
-    my ($class, $obj)  = $args;
-
+    my ($self, $args) = @_;
+    my ($class, $obj) = $args;
+    
 }
 
 # See the documentation of Bugzilla::Hook ("perldoc Bugzilla::Hook"

@@ -35,6 +35,12 @@ sub get_param_list {
                         type    => 'm',
                         choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
                         default => []
+                      },
+                      {
+                        name    => 'enhancedtreeview_mail_notifications',
+                        desc    => 'Send email notifications about dependency changes to users',
+                        type    => 'b',
+                        default => 1 
                       }
                      );
     return @param_list;
