@@ -35,7 +35,14 @@ sub get_param_list {
                         type    => 'm',
                         choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
                         default => []
+                      },
+                      {
+                        name    => 'enhancedtreeview_use_scrums_extension',
+                        desc    => 'Use Scrums extension for creation of bugs to put them to the parents sprint',
+                        type    => 'b',
+                        default => 0
                       }
+
                      );
     return @param_list;
 }
