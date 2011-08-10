@@ -382,7 +382,7 @@
     #   - tree: a hash of bug objects and of bug dependencies
     #%]
   [% bug = tree.$bugid %]
-  <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]'>
+  <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();">
     <span>
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
@@ -393,15 +393,17 @@
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
     </span>
-    <br />
-   <span class='intend'>
+   <span id="bug_[% bug.id %]_create" class='intend'>
         <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
             [create bug]
         </a>
-        &nbsp;&nbsp;
+        &nbsp;
         <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&product=[% bug.product %]&component=[% bug.component %]&blocked=[% FOREACH block = bug.blocked %][% block %],[% END %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]&dependson='>
             [clone bug]
         </a>
+    <script type="text/JavaScript">
+    $('#bug_[% bug.id %]_create').hide();
+    </script>
         
     </span>
     [% IF global.seen.$bugid %]
