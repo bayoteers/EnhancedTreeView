@@ -35,6 +35,15 @@
 
 %]
 
+[% USE Bugzilla %]
+[% USE date %]
+[% SET select_fields = {} %]
+[% FOREACH field = Bugzilla.get_fields(
+  { type => constants.FIELD_TYPE_SINGLE_SELECT, custom => 0 })
+%]
+  [% select_fields.${field.name} = field %]
+[% END %]
+
 <h1>EnhancedTreeView</h1>
 
 [% PROCESS depthControlToolbar %]
@@ -382,6 +391,9 @@
     #   - tree: a hash of bug objects and of bug dependencies
     #%]
   [% bug = tree.$bugid %]
+<!--
+onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
+-->
   <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();">
     <span>
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
@@ -392,6 +404,19 @@
             onMouseout="duplicatedout('[% bugid FILTER html %]')"
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
+    </span>
+    <span>
+        <form  style='display:inline;'>
+        <input type='text' name='estimate' value='estimate' />
+        <input type='text' name='summary' value='summary' />
+        <input type='text' name='description' value=' description' />
+       [%+ INCLUDE bug/field.html.tmpl
+            bug = bug, field = select_fields.bug_severity,
+            no_tds = 1, value = 'task',
+            editable = 1 %]
+        <!--<input type='text' name='severity and severity-->
+        <input type='submit' name='submit' value='Create' />
+        </form>
     </span>
    <span id="bug_[% bug.id %]_create" class='intend'>
         <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
