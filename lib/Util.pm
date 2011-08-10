@@ -192,6 +192,19 @@ sub ajax_tree_view {
             }
         }
     }
+
+    my $mail_delivery_method = '';
+    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
+    {
+        # Old mail_delivery_method choices contained no uppercase characters
+        if (exists Bugzilla->params->{'mail_delivery_method'}
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
+        {
+            $mail_delivery_method = Bugzilla->params->{'mail_delivery_method'};
+            Bugzilla->params->{'mail_delivery_method'} = 'None';
+        }
+    }
+
     #my $timestamp = $dbh->selectrow_array(q{SELECT LOCALTIMESTAMP(0)});
     for my $bid (keys %rel_data) {
         my (@blocks, @depends) = @{ $rel_data{$bid} };
@@ -204,6 +217,16 @@ sub ajax_tree_view {
         use Data::Dumper;
 
         $bug->update();
+    }
+
+
+    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
+    {
+        if (exists Bugzilla->params->{'mail_delivery_method'}
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
+        {
+            Bugzilla->params->{'mail_delivery_method'} = $mail_delivery_method;
+        }
     }
 
     $vars->{'json_text'} = 'hello';
