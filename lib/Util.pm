@@ -140,6 +140,121 @@ sub show_tree_view {
     $vars->{'maxdepth'}  = $maxdepth;
 }
 
+sub transform_hw {
+  # To handle multiple value rep_platform
+
+  my $ts = "0,";
+  my $g;
+  
+  foreach my $t (@_) {
+    $ts .= $t . ",";
+    $g = $t;
+  }
+  
+  $ts .= "0";
+  
+  if (($ts =~ tr/,//) <= 2) {
+    return $g;
+  }
+  else {
+    return $ts;
+  }
+}
+
+
+sub ajax_create_bug {
+    use Bugzilla::Constants;
+    my $cgi  = Bugzilla->cgi;
+
+    my $new_hw = transform_hw($cgi->param('rep_platform'));
+
+    # Group Validation
+    my @selected_groups;
+    foreach my $group (grep(/^bit-\d+$/, $cgi->param())) {
+        $group =~ /^bit-(\d+)$/;
+        push(@selected_groups, $1);
+    }
+
+    # The format of the initial comment can be structured by adding fields to the
+    # enter_bug template and then referencing them in the comment template.
+    my $comment;
+#    my $format = $template->get_format("bug/create/comment",
+#                                       scalar($cgi->param('format')), "txt");
+#    $template->process($format->{'template'}, $vars, \$comment)
+#        || ThrowTemplateError($template->error());
+
+    # Include custom fields editable on bug creation.
+    my @custom_bug_fields = grep {$_->type != FIELD_TYPE_MULTI_SELECT && $_->enter_bug}
+                                 Bugzilla->active_custom_fields;
+
+    # Undefined custom fields are ignored to ensure they will get their default
+    # value (e.g. "---" for custom single select fields).
+    my @bug_fields = grep { defined $cgi->param($_->name) } @custom_bug_fields;
+    @bug_fields = map { $_->name } @bug_fields;
+
+    push(@bug_fields, qw(
+        product
+        component
+
+        assigned_to
+        qa_contact
+
+        alias
+        blocked
+        commentprivacy
+        bug_file_loc
+        bug_severity
+        bug_status
+        dependson
+        keywords
+        short_desc
+        op_sys
+        priority
+        rep_platform
+        version
+        target_milestone
+        status_whiteboard
+
+        estimated_time
+        deadline
+    ));
+    my %bug_params;
+    foreach my $field (@bug_fields) {
+        $bug_params{$field} = $cgi->param($field);
+
+        if ($field eq "rep_platform") {
+            $bug_params{$field} = $new_hw;
+        }
+        else {
+            $bug_params{$field} = $cgi->param($field);
+        }
+    }
+    $bug_params{'cc'}          = [$cgi->param('cc')];
+    $bug_params{'groups'}      = \@selected_groups;
+    $bug_params{'comment'}     = $comment;
+
+    my @multi_selects = grep {$_->type == FIELD_TYPE_MULTI_SELECT && $_->enter_bug}
+                             Bugzilla->active_custom_fields;
+
+    foreach my $field (@multi_selects) {
+        $bug_params{$field->name} = [$cgi->param($field->name)];
+    }
+
+    my $bug = Bugzilla::Bug->create(\%bug_params);
+
+    # Get the bug ID back.
+    my $id = $bug->bug_id;
+}
+
+
+
+
+
+
+
+
+
+
 sub ajax_tree_view {
     my ($vars) = @_;
 
@@ -149,6 +264,11 @@ sub ajax_tree_view {
     my $dbh  = Bugzilla->dbh;
     my $json = new JSON::XS;
 
+    if ($cgi->param('method') == 'create')
+    {
+        ajax_create_bug();
+        return 1;
+    }
     my $data = $cgi->param('tree');
 
     if ($data =~ /(.*)/) {

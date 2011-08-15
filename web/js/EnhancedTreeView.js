@@ -132,4 +132,5 @@ $('.save_tree').each(function ()
     });
 });
 
+function foo() { alert('foo'); }
 

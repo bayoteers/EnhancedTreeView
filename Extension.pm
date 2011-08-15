@@ -94,6 +94,7 @@ sub page_before_template {
         ajax_tree_view($vars, $VERSION);
     }
 
+
 }
 
 __PACKAGE__->NAME;
