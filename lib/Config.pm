@@ -41,7 +41,7 @@ sub get_param_list {
                         desc    => 'Use Scrums extension for creation of bugs to put them to the parents sprint',
                         type    => 'b',
                         default => 0
-                      {
+                      },
                       {
                         name    => 'enhancedtreeview_mail_notifications',
                         desc    => 'Send email notifications about dependency changes to users',
