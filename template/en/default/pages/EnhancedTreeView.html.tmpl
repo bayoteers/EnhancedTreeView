@@ -406,12 +406,13 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
     </span>
-    <span>
-        <form  style='display:inline;' id='create_[% bug.id %]' action='EnhancedTreeView_ajax.html'>
+   <span id="bug_[% bug.id %]_create" style='display:inline;'>
+        <form  style='display:inline;' id='create_[% bug.id %]' action='page.cgi'>
+        <input type='hidden' value='EnhancedTreeView_ajax.html' name='id' />
         <input type='hidden' name='method' value='create' />
         <input type='text' style='width: 40px;' name='estimated_time' value='0.00' />
         <input type='text' name='short_desc' value='summary' />
-        <input type='text' name='description' value=' description' />
+        <input type='text' name='comment' value=' description' />
        [%+ INCLUDE bug/field.html.tmpl
             bug = bug, field = select_fields.bug_severity,
             no_tds = 1, value = 'task',
@@ -426,42 +427,31 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
 
         <input type='hidden' name='product' value='[% bug.product %]' />
         <input type='hidden' name='component' value='[% bug.component %]' />
-        <input type='hidden' name='version' value='' />
+        <input type='hidden' name='version' value='unspecified' />
         <input type='hidden' name='rep_platform' value='' />
-        <input type='hidden' name='op_sys' value='' />
+        <input type='hidden' name='op_sys' value='All' />
         <input type='hidden' name='bug_status' value='NEW' />
-        <input type='hidden' name='assigned_to' value='[% bug.assigned_to.id %]' />
+        <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' />
         <input type='hidden' name='qa_contact' value='' />
         <input type='hidden' name='cc' value='' />
         <input type='hidden' name='deadline' value='' />
-        <input type='hidden' name='cf_occurence' value='' />
+        <input type='hidden' name='cf_occurence' value='---' />
         <input type='hidden' name='cf_operator' value='' />
         <input type='hidden' name='cf_tescase' value='' />
         <input type='hidden' name='cf_req' value='' />
-        <input type='hidden' name='cf_localisation' value='' />
-        <input type='hidden' name='cf_verification' value='' />
-        <input type='hidden' name='cf_release' value='' />
-        <input type='hidden' name='short_desc' value='' />
-        <input type='hidden' name='comment' value='' />
+        <input type='hidden' name='cf_localisation' value='---' />
+        <input type='hidden' name='cf_verification' value='---' />
+        <input type='hidden' name='cf_release' value='---' />
         <input type='hidden' name='keywords' value='' />
         <input type='hidden' name='dependson' value='' />
-        <input type='hidden' name='blocked' value='' />
+        <input type='hidden' name='blocked' value='[% bug.id %]' />
+        <input type='hidden' name='contenttypemethod' value='autodetect' />
         <!--
         <input type='hidden' name='bug_file_loc' =  http://
         <input type='hidden' name='token' =  aKCkgBRP7m
-        <input type='hidden' name='contenttypemethod' =  autodetect
         <input type='hidden' name='contenttypeselection' =  text/plain
         <input type='hidden' name='contenttypeentry' =  -->
         </form>
-        <script type='text/javascript'> 
-        var options = {
-            success:   foo,
-            dataType: 'json'
-        };
-        $('#create_[% bug.id %]').ajaxForm(options);
-        </script>
-    </span>
-   <span id="bug_[% bug.id %]_create" class='intend'>
         <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
             [create bug]
         </a>
@@ -470,7 +460,13 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
             [clone bug]
         </a>
     <script type="text/JavaScript">
+    var options = {
+        success:   foo,
+        type: 'POST',
+        dataType: 'json'
+    };
     $('#bug_[% bug.id %]_create').hide();
+    $('#create_[% bug.id %]').ajaxForm(options);
     </script>
         
     </span>

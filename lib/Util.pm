@@ -24,6 +24,7 @@ use strict;
 use base qw(Exporter);
 
 use List::Util qw(max);
+use JSON;
 
 our @EXPORT = qw(
   show_tree_view
@@ -33,7 +34,7 @@ our @EXPORT = qw(
 
 local our $maxdepth      = 0;
 local our $hide_resolved = 0;
-if ($maxdepth !~ /^\d+$/) { $maxdepth = 0 }
+if ($maxdepth !~ /^\d+$/) { $maxdepth = 0; }
 
 ################################################################################
 # Main Section                                                                 #
@@ -141,30 +142,31 @@ sub show_tree_view {
 }
 
 sub transform_hw {
-  # To handle multiple value rep_platform
+    # To handle multiple value rep_platform
 
-  my $ts = "0,";
-  my $g;
-  
-  foreach my $t (@_) {
-    $ts .= $t . ",";
-    $g = $t;
-  }
-  
-  $ts .= "0";
-  
-  if (($ts =~ tr/,//) <= 2) {
-    return $g;
-  }
-  else {
-    return $ts;
-  }
+    my $ts = "0,";
+    my $g;
+
+    foreach my $t (@_) {
+        $ts .= $t . ",";
+        $g = $t;
+    }
+
+    $ts .= "0";
+
+    if (($ts =~ tr/,//) <= 2) {
+        return $g;
+    }
+    else {
+        return $ts;
+    }
 }
-
 
 sub ajax_create_bug {
     use Bugzilla::Constants;
-    my $cgi  = Bugzilla->cgi;
+
+    my ($vars) = @_;
+    my $cgi = Bugzilla->cgi;
 
     my $new_hw = transform_hw($cgi->param('rep_platform'));
 
@@ -174,50 +176,52 @@ sub ajax_create_bug {
         $group =~ /^bit-(\d+)$/;
         push(@selected_groups, $1);
     }
+    
 
     # The format of the initial comment can be structured by adding fields to the
     # enter_bug template and then referencing them in the comment template.
     my $comment;
-#    my $format = $template->get_format("bug/create/comment",
-#                                       scalar($cgi->param('format')), "txt");
-#    $template->process($format->{'template'}, $vars, \$comment)
-#        || ThrowTemplateError($template->error());
+    #    my $format = $template->get_format("bug/create/comment",
+    #                                       scalar($cgi->param('format')), "txt");
+    #    $template->process($format->{'template'}, $vars, \$comment)
+    #        || ThrowTemplateError($template->error());
 
     # Include custom fields editable on bug creation.
-    my @custom_bug_fields = grep {$_->type != FIELD_TYPE_MULTI_SELECT && $_->enter_bug}
-                                 Bugzilla->active_custom_fields;
+    my @custom_bug_fields = grep { $_->type != FIELD_TYPE_MULTI_SELECT && $_->enter_bug } Bugzilla->active_custom_fields;
 
     # Undefined custom fields are ignored to ensure they will get their default
     # value (e.g. "---" for custom single select fields).
     my @bug_fields = grep { defined $cgi->param($_->name) } @custom_bug_fields;
     @bug_fields = map { $_->name } @bug_fields;
 
-    push(@bug_fields, qw(
-        product
-        component
+    push(
+        @bug_fields, qw(
+          product
+          component
 
-        assigned_to
-        qa_contact
+          assigned_to
+          qa_contact
 
-        alias
-        blocked
-        commentprivacy
-        bug_file_loc
-        bug_severity
-        bug_status
-        dependson
-        keywords
-        short_desc
-        op_sys
-        priority
-        rep_platform
-        version
-        target_milestone
-        status_whiteboard
+          alias
+          blocked
+          commentprivacy
+          bug_file_loc
+          bug_severity
+          bug_status
+          dependson
+          keywords
+          short_desc
+          op_sys
+          priority
+          rep_platform
+          version
+          target_milestone
+          status_whiteboard
 
-        estimated_time
-        deadline
-    ));
+          estimated_time
+          deadline
+          )
+        );
     my %bug_params;
     foreach my $field (@bug_fields) {
         $bug_params{$field} = $cgi->param($field);
@@ -229,44 +233,32 @@ sub ajax_create_bug {
             $bug_params{$field} = $cgi->param($field);
         }
     }
-    $bug_params{'cc'}          = [$cgi->param('cc')];
-    $bug_params{'groups'}      = \@selected_groups;
-    $bug_params{'comment'}     = $comment;
+    $bug_params{'cc'}      = [ $cgi->param('cc') ];
+    $bug_params{'groups'}  = \@selected_groups;
+    $bug_params{'comment'} = $comment;
 
-    my @multi_selects = grep {$_->type == FIELD_TYPE_MULTI_SELECT && $_->enter_bug}
-                             Bugzilla->active_custom_fields;
+    my @multi_selects = grep { $_->type == FIELD_TYPE_MULTI_SELECT && $_->enter_bug } Bugzilla->active_custom_fields;
 
     foreach my $field (@multi_selects) {
-        $bug_params{$field->name} = [$cgi->param($field->name)];
+        $bug_params{ $field->name } = [ $cgi->param($field->name) ];
     }
 
     my $bug = Bugzilla::Bug->create(\%bug_params);
 
-    # Get the bug ID back.
-    my $id = $bug->bug_id;
+    my %bug_data;
+    $bug_data{'id'} = $bug->bug_id;
+    $vars->{'json_text'} = to_json(\%bug_data);
 }
-
-
-
-
-
-
-
-
-
 
 sub ajax_tree_view {
     my ($vars) = @_;
-
-    use JSON;
 
     my $cgi  = Bugzilla->cgi;
     my $dbh  = Bugzilla->dbh;
     my $json = new JSON::XS;
 
-    if ($cgi->param('method') == 'create')
-    {
-        ajax_create_bug();
+    if ($cgi->param('method') == 'create') {
+        ajax_create_bug($vars);
         return 1;
     }
     my $data = $cgi->param('tree');
@@ -314,12 +306,10 @@ sub ajax_tree_view {
     }
 
     my $mail_delivery_method = '';
-    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
-    {
+    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"}) {
         # Old mail_delivery_method choices contained no uppercase characters
         if (exists Bugzilla->params->{'mail_delivery_method'}
-            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
-        {
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/) {
             $mail_delivery_method = Bugzilla->params->{'mail_delivery_method'};
             Bugzilla->params->{'mail_delivery_method'} = 'None';
         }
@@ -339,12 +329,9 @@ sub ajax_tree_view {
         $bug->update();
     }
 
-
-    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"})
-    {
+    if (Bugzilla->params->{"enhancedtreeview_mail_notifications"}) {
         if (exists Bugzilla->params->{'mail_delivery_method'}
-            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/)
-        {
+            && Bugzilla->params->{'mail_delivery_method'} !~ /[A-Z]/) {
             Bugzilla->params->{'mail_delivery_method'} = $mail_delivery_method;
         }
     }
