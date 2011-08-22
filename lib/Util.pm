@@ -25,11 +25,12 @@ use base qw(Exporter);
 
 use List::Util qw(max);
 use JSON;
+use Storable qw(dclone);
 
 our @EXPORT = qw(
   show_tree_view
   ajax_tree_view
-
+  ajax_create_bug
   );
 
 local our $maxdepth      = 0;
@@ -89,6 +90,43 @@ sub GenerateTree {
     }
 }
 
+sub get_bug_data {
+    my ($vars, $bug_id, $get_deps) = @_;
+    my $cgi = Bugzilla->cgi;
+
+    my $bug = Bugzilla::Bug->check($bug_id);
+    my $id  = $bug->id;
+
+    my $dependson_tree = { $id => $bug };
+    my $dependson_ids = {};
+
+    my %bug_data = ();
+
+    if ($get_deps)
+    {
+        GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
+    }
+    $bug_data{'dependson_tree'} = $dependson_tree;
+    $bug_data{'dependson_ids'}  = [ keys(%$dependson_ids) ];
+
+    my $blocked_tree = { $id => $bug };
+    my $blocked_ids = {};
+    if ($get_deps)
+    {
+        GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
+    }
+    $bug_data{'blocked_tree'} = $blocked_tree;
+    $bug_data{'blocked_ids'}  = [ keys(%$blocked_ids) ];
+
+    $bug_data{'bugid'}         = $id;
+    $bug_data{'maxdepth'}      = $maxdepth;
+    $bug_data{'hide_resolved'} = $hide_resolved;
+    $bug_data{'allfields'}     = $bug->fields();
+    #return \%bug_data;
+    push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
+    return $vars;
+}
+
 sub show_tree_view {
     my ($vars, $VERSION) = @_;
     my $cgi = Bugzilla->cgi;
@@ -110,32 +148,7 @@ sub show_tree_view {
     $vars->{'bugs_data'} = [];
 
     foreach my $bug_id (@bug_ids) {
-        my $bug = Bugzilla::Bug->check($bug_id);
-        my $id  = $bug->id;
-
-        my $dependson_tree = { $id => $bug };
-        my $dependson_ids = {};
-
-        my %bug_data = ();
-
-        GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
-        $bug_data{'dependson_tree'} = $dependson_tree;
-        $bug_data{'dependson_ids'}  = [ keys(%$dependson_ids) ];
-
-        my $blocked_tree = { $id => $bug };
-        my $blocked_ids = {};
-        GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
-        $bug_data{'blocked_tree'} = $blocked_tree;
-        $bug_data{'blocked_ids'}  = [ keys(%$blocked_ids) ];
-
-        $bug_data{'bugid'}         = $id;
-        $bug_data{'maxdepth'}      = $maxdepth;
-        $bug_data{'hide_resolved'} = $hide_resolved;
-        $bug_data{'allfields'}     = $bug->fields();
-
-        use Storable qw(dclone);
-
-        push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
+        get_bug_data($vars, $bug_id, 1);
     }
     $vars->{'realdepth'} = $realdepth;
     $vars->{'maxdepth'}  = $maxdepth;
@@ -176,7 +189,6 @@ sub ajax_create_bug {
         $group =~ /^bit-(\d+)$/;
         push(@selected_groups, $1);
     }
-    
 
     # The format of the initial comment can be structured by adding fields to the
     # enter_bug template and then referencing them in the comment template.
@@ -245,9 +257,11 @@ sub ajax_create_bug {
 
     my $bug = Bugzilla::Bug->create(\%bug_params);
 
-    my %bug_data;
-    $bug_data{'id'} = $bug->bug_id;
-    $vars->{'json_text'} = to_json(\%bug_data);
+    #my %bug_data;
+    #$bug_data{'id'} = $bug->bug_id;
+    #$vars->{'json_text'} = to_json(\%bug_data);
+
+    return $vars = get_bug_data($vars, $bug->bug_id, 0);
 }
 
 sub ajax_tree_view {
@@ -257,10 +271,6 @@ sub ajax_tree_view {
     my $dbh  = Bugzilla->dbh;
     my $json = new JSON::XS;
 
-    if ($cgi->param('method') == 'create') {
-        ajax_create_bug($vars);
-        return 1;
-    }
     my $data = $cgi->param('tree');
 
     if ($data =~ /(.*)/) {

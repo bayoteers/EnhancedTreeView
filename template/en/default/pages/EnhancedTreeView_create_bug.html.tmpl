@@ -1,0 +1,55 @@
+[%# BLOCK tree_section_g %]
+  [%# INTERFACE
+    #   - ids: a list of bug IDs to be displayed as children
+    #   - type: the type of tree. 1 = depends on, 2 = blockeds
+    # GLOBALS
+    #   - seen: Maintains a global hash of bugs that have been displayed
+    #%]
+  [% global.seen = {} %]
+  [%# Display the tree of bugs that this bug depends on. %]
+  <p>
+    Bugs Shown:
+
+    [% tree_name = "dependson_tree" %]
+
+    [% FOREACH b_data IN bugs_data %]
+      [% bugid = b_data.bugid %]
+      [% ids = b_data.dependson_ids %]
+
+      [%- IF ids.size -%]
+        [% "${bugid}" FILTER bug_link(bugid) FILTER none %] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ ids.size %])</a>,
+      [% ELSE %]
+        [% "${bugid}" FILTER bug_link(bugid) FILTER none %],
+      [% END %] 
+    [% END %] 
+    <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% do_ids = b_data.dependson_ids.join(',') %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
+  </p>
+
+    <p class="edit_mode">
+      You can now drag and drop items around the tree. Use Ctrl+Drag/Drop to place the item in multiple parts of the tree.
+    </p>
+
+    <ul class="tree sortable root no-nest" id='root'>
+      <li id='foo_0'><span></span>
+        <ul>
+        [%# PROCESS "pages/EnhancedTreeView_display_tree.html.tmpl" tree=$tree_name %]
+        [% PROCESS "pages/EnhancedTreeView_display_tree.html.tmpl" bugs_data=bugs_data %]
+          [%# FOREACH b_data IN bugs_data %]
+            [%# dependson_tree = b_data.dependson_tree %]
+            [%# ids = b_data.dependson_ids %]
+            [%# dependson_tree=b_data.dependson_tree %]
+            [%# blocked_tree=b_data.blocked_tree %]
+            [%# blocked_ids=b_data.blocked_ids %]
+            [%# realdepth=b_data.realdepth %]
+            [%# bugid=b_data.bugid %]
+            [%# maxdepth=b_data.maxdepth %]
+            [%# hide_resolved=b_data.hide_resolved %]
+
+          [%# END %]
+        </ul>
+      </li>
+    </ul>
+[%# END %]
+
+
+

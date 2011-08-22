@@ -132,4 +132,8 @@ $('.save_tree').each(function ()
     });
 });
 
-function foo() { alert('foo'); }
+function add_bug(parent_elem, html)
+{
+    parent_elem.append(html);
+}
+

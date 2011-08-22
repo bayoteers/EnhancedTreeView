@@ -54,7 +54,8 @@
 
 [% PROCESS depthControlToolbar %]
 
-[% INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
+[%# INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
+[% PROCESS "pages/EnhancedTreeView_create_bug.html.tmpl" tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
 
 [% PROCESS depthControlToolbar %]
 
@@ -278,253 +279,23 @@
                 }
         });
     original_tree = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
+
+    $('li [class=bug]').each(function ()
+    {
+        var id = $(this).attr('id').replace('bug_', '');
+        var options = {
+                success: function (data) { add_bug($('#children_'+id), data); },
+                type: 'GET',
+                target: null,
+                //beforeSubmit: function() { alert('hello'); },
+                //dataType: 'null'
+            };
+            $('#bug_'+id+'_create').hide();
+            //$('#create_[% bug.id %]').ajaxForm(function (data) { alert('moi'); add_bug($('#children_[% bug.id %]'), data); });
+            $('#create_'+id).ajaxForm(options);
     });
+});
 </script>
-
-[% BLOCK tree_section_g %]
-  [%# INTERFACE
-    #   - ids: a list of bug IDs to be displayed as children
-    #   - type: the type of tree. 1 = depends on, 2 = blockeds
-    # GLOBALS
-    #   - seen: Maintains a global hash of bugs that have been displayed
-    #%]
-  [% global.seen = {} %]
-  [%# Display the tree of bugs that this bug depends on. %]
-  <p>
-    Bugs Shown:
-
-    [% tree_name = "dependson_tree" %]
-
-    [% FOREACH b_data IN bugs_data %]
-      [% bugid = b_data.bugid %]
-      [% ids = b_data.dependson_ids %]
-
-      [%- IF ids.size -%]
-        [% "${bugid}" FILTER bug_link(bugid) FILTER none %] <a href="buglist.cgi?bug_id=[% ids.join(",") %]">([%+ ids.size %])</a>,
-      [% ELSE %]
-        [% "${bugid}" FILTER bug_link(bugid) FILTER none %],
-      [% END %] 
-    [% END %] 
-    <a href="buglist.cgi?bug_id=[% FOREACH b_data IN bugs_data %][% do_ids = b_data.dependson_ids.join(',') %][% b_data.bugid %],[% do_ids = b_data.dependson_ids.join(',') %][% IF do_ids %][% do_ids %],[% END %][% END %]">view all as bug list</a>
-  </p>
-
-    <p class="edit_mode">
-      You can now drag and drop items around the tree. Use Ctrl+Drag/Drop to place the item in multiple parts of the tree.
-    </p>
-
-    <ul class="tree sortable root no-nest" id='root'>
-      <li id='foo_0'><span></span>
-        <ul>
-          [% FOREACH b_data IN bugs_data %]
-            [% dependson_tree = b_data.dependson_tree %]
-            [% ids = b_data.dependson_ids %]
-            [% dependson_tree=b_data.dependson_tree %]
-            [% blocked_tree=b_data.blocked_tree %]
-            [% blocked_ids=b_data.blocked_ids %]
-            [% realdepth=b_data.realdepth %]
-            [% bugid=b_data.bugid %]
-            [% maxdepth=b_data.maxdepth %]
-            [% hide_resolved=b_data.hide_resolved %]
-
-            [% INCLUDE display_tree tree=$tree_name %]
-          [% END %]
-        </ul>
-      </li>
-    </ul>
-[% END %]
-
-[%###########################################################################%]
-[%# Tree-drawing blocks                                                     #%]
-[%###########################################################################%]
-
-[% BLOCK tree_section %]
-  [%# INTERFACE
-    #   - ids: a list of bug IDs to be displayed as children
-    #   - type: the type of tree. 1 = depends on, 2 = blockeds
-    # GLOBALS
-    #   - seen: Maintains a global hash of bugs that have been displayed
-    #%]
-  [% global.seen = {} %]
-  [%# Display the tree of bugs that this bug depends on. %]
-  <h3>
-    <a href="show_bug.cgi?id=[% bugid %]">[% terms.Bug %] [%+ bugid %]</a> 
-    [% IF type == 1 %]
-        [% tree_name = "dependson_tree" %]
-        [% IF ids.size %]
-            depends on 
-        [% ELSE %]
-            does not depend on any [% terms.bugs %].
-        [% END %]
-    [% ELSIF type == 2 %]
-        [% tree_name = "blocked_tree" %]
-        [% IF ids.size %] 
-            blocks 
-        [% ELSE %]
-            does not block any [% terms.bugs %].
-        [% END %]
-    [% END %]
-    [% IF ids.size %]
-        [%+ (ids.size == 1) ? "one" : ids.size %]
-        [%+ IF hide_resolved %]open[% END %]
-        [%+ (ids.size == 1) ? terms.bug : terms.bugs %]:
-    [% END %] 
-  </h3>
-  [% IF ids.size %]
-    ([% IF maxdepth -%]Up to [% maxdepth %] level[% "s" IF maxdepth > 1 %] deep | [% END -%]
-    <a href="buglist.cgi?bug_id=[% ids.join(",") %]">view as [% terms.bug %] list</a>
-    [% IF user.in_group('editbugs') && ids.size > 1 %]
-      | <a href="buglist.cgi?bug_id=[% ids.join(",") %]&amp;tweak=1">change several</a>
-    [% END %])
-    <ol class="tree sortable root">
-    <li id='foo_0'><span></span>
-    <ol >
-      [% INCLUDE display_tree tree=$tree_name %]
-    </ol>
-    </li></ol>
-  [% END %]
-
-[% END %]
-
-
-[% BLOCK display_tree %]
-  [%# INTERFACE
-    #   - bugid: the ID of the bug being displayed
-    #   - tree: a hash of bug objects and of bug dependencies
-    #%]
-  [% bug = tree.$bugid %]
-<!--
-onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
--->
-  <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %]' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();">
-    <span>
-    [%- INCLUDE bullet bugid=bugid tree=tree -%]
-    <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
-          id="[% bugid FILTER html %]" 
-          [% IF global.seen.$bugid %]
-            onMouseover="duplicatedover('[% bugid FILTER html %]')"
-            onMouseout="duplicatedout('[% bugid FILTER html %]')"
-          [% END %]>
-      [%- INCLUDE buglink bug=bug bugid=bugid %]
-    </span>
-   <span id="bug_[% bug.id %]_create" style='display:inline;'>
-        <form  style='display:inline;' id='create_[% bug.id %]' action='page.cgi'>
-        <input type='hidden' value='EnhancedTreeView_ajax.html' name='id' />
-        <input type='hidden' name='method' value='create' />
-        <input type='text' style='width: 40px;' name='estimated_time' value='0.00' />
-        <input type='text' name='short_desc' value='summary' />
-        <input type='text' name='comment' value=' description' />
-       [%+ INCLUDE bug/field.html.tmpl
-            bug = bug, field = select_fields.bug_severity,
-            no_tds = 1, value = 'task',
-            editable = 1 %]
-        <!-- FOO -->
-        <!--<input type='text' name='severity and severity-->
-        <input type='submit' name='submit' value='Create' />
-
-[% #FOREACH field_name = bug.fields() %]
-[% #field_name %]
-[% #END %]
-
-        <input type='hidden' name='product' value='[% bug.product %]' />
-        <input type='hidden' name='component' value='[% bug.component %]' />
-        <input type='hidden' name='version' value='unspecified' />
-        <input type='hidden' name='rep_platform' value='' />
-        <input type='hidden' name='op_sys' value='All' />
-        <input type='hidden' name='bug_status' value='NEW' />
-        <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' />
-        <input type='hidden' name='qa_contact' value='' />
-        <input type='hidden' name='cc' value='' />
-        <input type='hidden' name='deadline' value='' />
-        <input type='hidden' name='cf_occurence' value='---' />
-        <input type='hidden' name='cf_operator' value='' />
-        <input type='hidden' name='cf_tescase' value='' />
-        <input type='hidden' name='cf_req' value='' />
-        <input type='hidden' name='cf_localisation' value='---' />
-        <input type='hidden' name='cf_verification' value='---' />
-        <input type='hidden' name='cf_release' value='---' />
-        <input type='hidden' name='keywords' value='' />
-        <input type='hidden' name='dependson' value='' />
-        <input type='hidden' name='blocked' value='[% bug.id %]' />
-        <input type='hidden' name='contenttypemethod' value='autodetect' />
-        <!--
-        <input type='hidden' name='bug_file_loc' =  http://
-        <input type='hidden' name='token' =  aKCkgBRP7m
-        <input type='hidden' name='contenttypeselection' =  text/plain
-        <input type='hidden' name='contenttypeentry' =  -->
-        </form>
-        <a href='enter_bug.cgi?product=[% bug.product %]&component=[% bug.component %]=&blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
-            [create bug]
-        </a>
-        &nbsp;
-        <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&product=[% bug.product %]&component=[% bug.component %]&blocked=[% FOREACH block = bug.blocked %][% block %],[% END %][% FOREACH field_name = inherited_fields %]&[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]&dependson='>
-            [clone bug]
-        </a>
-    <script type="text/JavaScript">
-    var options = {
-        success:   foo,
-        type: 'POST',
-        dataType: 'json'
-    };
-    $('#bug_[% bug.id %]_create').hide();
-    $('#create_[% bug.id %]').ajaxForm(options);
-    </script>
-        
-    </span>
-    [% IF global.seen.$bugid %]
-      <b style='color: red;'><a title="Already displayed above; click to locate"
-            onclick="duplicated('[% bugid FILTER html %]')"
-            href="#b[% bugid %]">(*)</a></b>
-    </span>
-    [% ELSIF tree.dependencies.$bugid.size %]
-    </span>
-      <ul>
-        [% FOREACH depid = tree.dependencies.$bugid %]
-          [% INCLUDE display_tree bugid=depid %]
-        [% END %]
-      </ul>
-    [% ELSE %]
-    </span>
-    [% END %]
-  </li>
-  [% global.seen.$bugid = 1 %]
-[% END %]
-
-[% BLOCK bullet %]
-  [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
-    [% extra_class = " b_open" %]
-    [% extra_args = 'onclick="expclo(this);"' %]
-  [% END %]
-  <a name="b[% bugid %]" 
-     class="b [%+ extra_class FILTER none %]"
-    style='a:hover
-{ 
-font-size: 400%;
-}'
-     title="Click to expand or contract this portion of the tree." [% extra_args FILTER none %]>&nbsp;&nbsp;</a>
-[% END %]
-
-[% BLOCK buglink %]
-  [% isclosed = !bug.isopened %]
-  [% FILTER closed(isclosed) -%]
-    <a title="[% INCLUDE buginfo bug=bug %]"
-       href="show_bug.cgi?id=[% bugid %]">
-      <b>[%- bugid %]:</b>
-      <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
-      <span class="summ_info">[[% INCLUDE buginfo %]]</span>
-    </a>
-    <a href="showdependencytree.cgi?id=[% bugid FILTER url_quote %]"
-       class="tree_link">
-      <img src="skins/standard/dependency-tree/tree.png"
-           title="See dependency tree for [% terms.bug %] [%+ bugid FILTER html %]">
-    </a>
-  [% END %]
-[% END %]
-
-[% BLOCK buginfo %]
-  [% display_value("bug_status", bug.bug_status) FILTER html -%] [%+ display_value("resolution", bug.resolution) FILTER html %];
-  [%-%] assigned to [% bug.assigned_to.login FILTER email FILTER html %]
-  [%-%][% "; Target: " _ bug.target_milestone IF bug.target_milestone %]
-[% END %]
 
 [%###########################################################################%]
 [%# Block for depth control toolbar                                         #%]
