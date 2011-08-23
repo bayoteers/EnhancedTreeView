@@ -102,8 +102,7 @@ sub get_bug_data {
 
     my %bug_data = ();
 
-    if ($get_deps)
-    {
+    if ($get_deps) {
         GenerateTree($id, "dependson", 1, $dependson_tree, $dependson_ids);
     }
     $bug_data{'dependson_tree'} = $dependson_tree;
@@ -111,8 +110,7 @@ sub get_bug_data {
 
     my $blocked_tree = { $id => $bug };
     my $blocked_ids = {};
-    if ($get_deps)
-    {
+    if ($get_deps) {
         GenerateTree($id, "blocked", 1, $blocked_tree, $blocked_ids);
     }
     $bug_data{'blocked_tree'} = $blocked_tree;

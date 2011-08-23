@@ -94,8 +94,7 @@ sub page_before_template {
         ajax_tree_view($vars, $VERSION);
     }
     #if ($page eq 'EnhancedTreeView_create_bug.html')
-    if ($page eq 'EnhancedTreeView_display_tree.html')
-    {
+    if ($page eq 'EnhancedTreeView_display_tree.html') {
         ajax_create_bug($vars);
     }
 

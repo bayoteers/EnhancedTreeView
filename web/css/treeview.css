@@ -45,4 +45,7 @@ ul.sortable {
 .placeholder {
     border: 1px dashed black;
 }
+.bug {
+    display: inline-block;;
+}
 

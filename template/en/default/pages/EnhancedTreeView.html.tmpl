@@ -280,20 +280,11 @@
         });
     original_tree = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
 
-    $('li [class=bug]').each(function ()
-    {
-        var id = $(this).attr('id').replace('bug_', '');
-        var options = {
-                success: function (data) { add_bug($('#children_'+id), data); },
-                type: 'GET',
-                target: null,
-                //beforeSubmit: function() { alert('hello'); },
-                //dataType: 'null'
-            };
-            $('#bug_'+id+'_create').hide();
-            //$('#create_[% bug.id %]').ajaxForm(function (data) { alert('moi'); add_bug($('#children_[% bug.id %]'), data); });
-            $('#create_'+id).ajaxForm(options);
-    });
+//    $('li [class=bug]').each(function ()
+//    {
+//        var id = $(this).attr('id').replace('bug_', '');
+//        //ajaxify(id);
+//    });
 });
 </script>
 

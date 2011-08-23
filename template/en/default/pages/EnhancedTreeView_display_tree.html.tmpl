@@ -25,8 +25,8 @@
 onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
   <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %] bug' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >
 -->
-  <li id="bug_[% bug.id %]" class='bug' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >
-    <span>
+  <li id="bug_[% bug.id %]" class='bug'>
+    <span onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();">
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
           id="b[% bugid FILTER html %]" 
@@ -92,33 +92,8 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
             [clone bug]
         </a>
     <script type="text/JavaScript">
-
-    //var id = $("#bug_[% bug.id %]").attr('id').replace('bug_', '');
-//    id = "[% bug.id %]";
-//    var options = {
-//            success: function (data) { add_bug($('#children_'+id), data); },
-//            type: 'GET',
-//            target: null,
-//            //beforeSubmit: function() { alert('hello'); },
-//            //dataType: 'null'
-//        };
-//        $('#bug_'+id+'_create').hide();
-//        //$('#create_[% bug.id %]').ajaxForm(function (data) { alert('moi'); add_bug($('#children_[% bug.id %]'), data); });
-//        $('#create_'+id).ajaxForm(options);
-//
-//    var options = {
-//        success: foo,
-//        //success: function (data) { alert('moi'); add_bug($('#children_[% bug.id %]'), data); },
-//        type: 'POST',
-//        beforeSubmit: function() { alert('hello'); },
-//        dataType: 'xml'
-//    };
-//    $('#bug_[% bug.id %]_create').hide();
-//    //$('#create_[% bug.id %]').ajaxForm(function (data) { alert('moi'); add_bug($('#children_[% bug.id %]'), data); });
-//    $('#create_[% bug.id %]').ajaxForm(options);
+        ajaxify('[% bug.id %]');
     </script>
-<!-- FOOOOO -->
-        
     </span>
     [%# IF global.seen.$bugid %]
       <b style='color: red;'><a title="Already displayed above; click to locate"

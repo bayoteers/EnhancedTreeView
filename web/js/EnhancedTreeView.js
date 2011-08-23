@@ -137,3 +137,16 @@ function add_bug(parent_elem, html)
     parent_elem.append(html);
 }
 
+function ajaxify(id)
+{
+    var options = {
+            success: function (data) { add_bug($('#children_'+id), data); },
+            type: 'GET',
+            target: null,
+            //beforeSubmit: function() { alert('hello'); },
+            //dataType: 'null'
+        };
+    $('#bug_'+id+'_create').hide();
+    $('#create_'+id).ajaxForm(options);
+
+}
