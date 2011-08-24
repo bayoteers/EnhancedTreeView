@@ -146,7 +146,10 @@ function ajaxify(id)
             //beforeSubmit: function() { alert('hello'); },
             //dataType: 'null'
         };
-    $('#bug_'+id+'_create').hide();
+    //bug = $('#bug_'+id+'_create');
     $('#create_'+id).ajaxForm(options);
 
+    //create_form = $('#bug_'+id+'_create');
+    //bug.hover(function (){create_form.attr('class','show');}, function() {create_form.attr('class', 'hide');}); 
+     //bug.hover(function (){$('#bug_[% bug.id %]_create').show();}, function() {$('#bug_[% bug.id %]_create').hide();}) 
 }

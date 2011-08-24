@@ -37,15 +37,33 @@ ul.sortable {
     padding: 0;
 }
 
-.sortable li span  {
+.sortable li span {
     padding: 3px;
     margin: 0;
     cursor: move;
+    /*display: inline;*/
+    /*border: 1px solid red;*/
 }
 .placeholder {
     border: 1px dashed black;
 }
 .bug {
-    display: inline-block;;
+/*    display: inline-block;;*/
 }
 
+ul.tree li {
+    white-space: nowrap;
+}
+
+span.hide {
+    display: none;
+}
+span.show {
+    display: inline;
+}
+ 
+/*
+span.hov:hover {
+    display: inline;
+}
+    */
