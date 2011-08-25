@@ -67,3 +67,8 @@ span.hov:hover {
     display: inline;
 }
     */
+.finline {
+    display:inline;
+    margin: 0;
+}
+.x-form-item {margin-bottom: 20px; border: 2px solid red;}
