@@ -71,4 +71,13 @@ span.hov:hover {
     display:inline;
     margin: 0;
 }
-.x-form-item {margin-bottom: 20px; border: 2px solid red;}
+
+input.create {
+    font-size: 9px;
+    /*border:1px solid #3b6e22;*/
+}
+
+.finline select {
+    font-size: 9px;
+}
+/*.x-form-item {margin-bottom: 20px; border: 2px solid red;}*/

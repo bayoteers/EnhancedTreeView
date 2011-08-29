@@ -65,7 +65,9 @@
     var original_tree = [];
     var sortable_parent = null;
     var sortable_copy = false;
+    var sticky = [];
     $(document).ready(function() {
+        $('html').click(hide_sticky);
 
         $('.edit_mode').hide();
         $('.enable_edit_mode').each(function()

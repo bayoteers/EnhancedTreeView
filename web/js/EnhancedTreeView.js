@@ -153,3 +153,24 @@ function ajaxify(id)
     //bug.hover(function (){create_form.attr('class','show');}, function() {create_form.attr('class', 'hide');}); 
      //bug.hover(function (){$('#bug_[% bug.id %]_create').show();}, function() {$('#bug_[% bug.id %]_create').hide();}) 
 }
+
+function toggle_vis(elem, id, arg)
+{
+    var obj = $(elem).children(id);
+    if (arg == 'show')
+    {
+        obj.show();
+    } else if (arg == 'hide' && $.inArray(id, sticky) < 0)
+    {
+        //alert($.inArray(elem, sticky));
+        obj.hide();
+    }
+}
+
+function hide_sticky()
+{
+    while (sticky.length)
+    {
+        $(sticky.pop()).hide();
+    }
+}

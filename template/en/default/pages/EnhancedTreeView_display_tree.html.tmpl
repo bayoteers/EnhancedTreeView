@@ -26,7 +26,7 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
   <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %] bug' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >
 -->
   <li id="bug_[% bug.id %]" class='bug'  >
-    <span onMouseOver="$(this).children('#bug_[% bug.id %]_create').show();" onMouseOut="$(this).children('#bug_[% bug.id %]_create').hide();" >
+    <span onMouseOver="toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
     <!--<span onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >-->
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
@@ -37,20 +37,18 @@ onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
           [% END %]>
       [%- INCLUDE buglink bug=bug bugid=bugid %]
     </span>
-   <span id="bug_[% bug.id %]_create" class='hide'>
+   <span id="bug_[% bug.id %]_create" class='hide finline' onClick="event.stopPropagation(); sticky.push('#bug_[% bug.id %]_create'); // alert(sticky.length);">
         <form  class='finline' id='create_[% bug.id %]' action='page.cgi'>
         <input type='hidden' value='EnhancedTreeView_display_tree.html' name='id' >
         <input type='hidden' name='method' value='create' >
-        <input class='finline' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
-        <input class='finline' type='text' name='short_desc' value='summary' >
-        <input class='finline' type='text' name='comment' value=' description' >
+        <input class='create' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
+        <input class='create' type='text' name='short_desc' value='summary' >
+        <input class='create' type='text' name='comment' value=' description' >
        [%+ INCLUDE bug/field.html.tmpl
             bug = bug, field = select_fields.bug_severity,
             no_tds = 1, value = 'task',
             editable = 1 %]
-        <!-- FOO -->
-        <!--<input type='text' name='severity and severity-->
-        <input class='finline' type='submit' name='submit' value='Create' >
+        <input class='create' type='submit' name='submit' value='Create' >
 
 [% #FOREACH field_name = bug.fields() %]
 [% #field_name %]
