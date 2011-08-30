@@ -143,15 +143,8 @@ function ajaxify(id)
             success: function (data) { add_bug($('#children_'+id), data); },
             type: 'GET',
             target: null,
-            //beforeSubmit: function() { alert('hello'); },
-            //dataType: 'null'
         };
-    //bug = $('#bug_'+id+'_create');
     $('#create_'+id).ajaxForm(options);
-
-    //create_form = $('#bug_'+id+'_create');
-    //bug.hover(function (){create_form.attr('class','show');}, function() {create_form.attr('class', 'hide');}); 
-     //bug.hover(function (){$('#bug_[% bug.id %]_create').show();}, function() {$('#bug_[% bug.id %]_create').hide();}) 
 }
 
 function toggle_vis(elem, id, arg)
@@ -162,7 +155,6 @@ function toggle_vis(elem, id, arg)
         obj.show();
     } else if (arg == 'hide' && $.inArray(id, sticky) < 0)
     {
-        //alert($.inArray(elem, sticky));
         obj.hide();
     }
 }

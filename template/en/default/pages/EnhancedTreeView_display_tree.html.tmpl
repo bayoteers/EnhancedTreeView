@@ -1,3 +1,25 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Advanced Treeview Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia Corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Eero Heino <eero.heino@nokia.com>
+  #%]
+
+
   [% FOREACH b_data IN bugs_data %]
     [% dependson_tree = b_data.dependson_tree %]
     [% ids = b_data.dependson_ids %]
@@ -21,13 +43,8 @@
     #   - tree: a hash of bug objects and of bug dependencies
     #%]
   [% bug = tree.$bugid %]
-<!--
-onMouseOver="$(this).find('span id=[bug_[% bug.id %]_create]').show();"
-  <li id="bug_[% bug.id %]" class='clsbug_[% bug.id %] bug' onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >
--->
   <li id="bug_[% bug.id %]" class='bug'  >
     <span onMouseOver="toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
-    <!--<span onMouseOver="$('#bug_[% bug.id %]_create').show();" onMouseOut="$('#bug_[% bug.id %]_create').hide();" >-->
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
           id="b[% bugid FILTER html %]" 
