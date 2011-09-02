@@ -305,8 +305,8 @@
    <td align="center">
    <form method="get" action=""
            style="display: inline; margin: 0px;">
+     <input name='id' type='hidden' value='EnhancedTreeView.html' />
      <input name="bug_id" type="hidden" value="[% FOREACH bug_data IN bugs_data %][% bug_data.bugid %],[% END %]">
-     <input name='id' type='hidden' value='treeview.html' />
      [% IF maxdepth %]
        <input name="maxdepth" type="hidden" value="[% maxdepth %]">
      [% END %]
