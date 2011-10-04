@@ -190,7 +190,6 @@ sub ajax_create_bug {
 
     # The format of the initial comment can be structured by adding fields to the
     # enter_bug template and then referencing them in the comment template.
-    my $comment;
     #    my $format = $template->get_format("bug/create/comment",
     #                                       scalar($cgi->param('format')), "txt");
     #    $template->process($format->{'template'}, $vars, \$comment)
@@ -245,7 +244,7 @@ sub ajax_create_bug {
     }
     $bug_params{'cc'}      = [ $cgi->param('cc') ];
     $bug_params{'groups'}  = \@selected_groups;
-    $bug_params{'comment'} = $comment;
+    $bug_params{'comment'} = $cgi->param('comment');
 
     my @multi_selects = grep { $_->type == FIELD_TYPE_MULTI_SELECT && $_->enter_bug } Bugzilla->active_custom_fields;
 
