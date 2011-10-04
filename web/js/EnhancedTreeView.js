@@ -129,6 +129,7 @@ function bindSaveButton() {
                     });
                 },
                 'json'); // post
+	    unsaved_changes = false;
         }); // click-function
     }); // each
 } // bindSaveButton
