@@ -18,5 +18,8 @@
   # Contributor(s):
   #  Eero Heino <eero.heino@nokia.com>
   #%]
-[% json_text %]
+{ errors : [% IF errors %]true[% ELSE %]false[% END %],
+  errormsg: "[% errors %]"
+}
+[% # json_text %]
 

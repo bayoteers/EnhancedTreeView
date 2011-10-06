@@ -91,7 +91,7 @@ sub GenerateTree {
 }
 
 sub get_bug_data {
-    my ($vars, $bug_id, $get_deps) = @_;
+    my ($bug_id, $get_deps) = @_;
     my $cgi = Bugzilla->cgi;
 
     my $bug = Bugzilla::Bug->check($bug_id);
@@ -120,9 +120,7 @@ sub get_bug_data {
     $bug_data{'maxdepth'}      = $maxdepth;
     $bug_data{'hide_resolved'} = $hide_resolved;
     $bug_data{'allfields'}     = $bug->fields();
-    #return \%bug_data;
-    push(@{ $vars->{'bugs_data'} }, dclone(\%bug_data));
-    return $vars;
+    return \%bug_data;
 }
 
 sub show_tree_view {
@@ -146,7 +144,7 @@ sub show_tree_view {
     $vars->{'bugs_data'} = [];
 
     foreach my $bug_id (@bug_ids) {
-        get_bug_data($vars, $bug_id, 1);
+        push(@{ $vars->{'bugs_data'} }, get_bug_data($bug_id, 1));
     }
     $vars->{'realdepth'} = $realdepth;
     $vars->{'maxdepth'}  = $maxdepth;
@@ -258,7 +256,7 @@ sub ajax_create_bug {
     #$bug_data{'id'} = $bug->bug_id;
     #$vars->{'json_text'} = to_json(\%bug_data);
 
-    return $vars = get_bug_data($vars, $bug->bug_id, 0);
+    push(@{ $vars->{'bugs_data'} }, get_bug_data($bug->bug_id, 0));
 }
 
 sub ajax_tree_view {
@@ -268,6 +266,21 @@ sub ajax_tree_view {
     my $dbh  = Bugzilla->dbh;
     my $json = new JSON::XS;
 
+    my $original_data = $cgi->param('original');
+
+    if ($original_data =~ /(.*)/) {
+        $original_data = $1;    # $data now untainted
+    }
+    my $original = $json->allow_nonref->utf8->relaxed->decode($original_data);
+    my %original_rel_data;
+    parse_relations_from_array($original, \%original_rel_data); 
+    my $comp_err = compare_original_to_database(\%original_rel_data);
+
+    if ($comp_err) {
+        $vars->{'errors'} = "Collision in database update. Refresh page to update data.";
+        return;
+    }
+
     my $data = $cgi->param('tree');
 
     if ($data =~ /(.*)/) {
@@ -275,42 +288,9 @@ sub ajax_tree_view {
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
-    # bug id => (depends, blocks)
-    my %rel_data = ();
-
-    # collect all dependecies for a bug
-    for my $bug_data (@{$content}) {
-        #  and $bug_data->{'parent_id'} ne 'root'
-        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0') {
-            my $found = 0;
-            foreach my $bid (keys %rel_data) {
-                # depends on
-                if ($bid eq $bug_data->{'item_id'}) {
-                    $found = 1;
-                    push(@{ $rel_data{ $bug_data->{'item_id'} }[1] }, $bug_data->{'parent_id'});
-                    last;
-                }
-            }
-            if (not $found) {
-                @{ $rel_data{ $bug_data->{'item_id'} } } = ([], [ $bug_data->{'parent_id'} ]);
-            }
-
-            if ($bug_data->{'parent_id'} ne '0' and $bug_data->{'parent_id'} ne 'root') {
-                $found = 0;
-                foreach my $bid (keys %rel_data) {
-                    # blocks on
-                    if ($bid eq $bug_data->{'parent_id'}) {
-                        $found = 1;
-                        push(@{ $rel_data{ $bug_data->{'parent_id'} }[0] }, $bug_data->{'item_id'});
-                        last;
-                    }
-                }
-                if (not $found) {
-                    @{ $rel_data{ $bug_data->{'parent_id'} } } = ([ $bug_data->{'item_id'} ], []);
-                }
-            }
-        }
-    }
+    my %rel_data;
+    my $rel_data_ref = \%rel_data;
+    parse_relations_from_array($content, $rel_data_ref); 
 
     my $mail_delivery_method = '';
     if (Bugzilla->params->{"enhancedtreeview_mail_notifications"}) {
@@ -322,11 +302,13 @@ sub ajax_tree_view {
         }
     }
 
-    #my $timestamp = $dbh->selectrow_array(q{SELECT LOCALTIMESTAMP(0)});
-    for my $bid (keys %rel_data) {
-        my (@blocks, @depends) = @{ $rel_data{$bid} };
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+    my @all_bugs = keys %rel_data;
+    for my $bid (@all_bugs) {
+        my (@blocks, @depends) = @{ $rel_data_ref->{$bid} };
 
-        if (@depends and (scalar $depends[0] == 0 or $depends[0] == 'root')) {
+        if (@depends and (scalar @depends[0] == 0 or @depends[0] == 'root')) {
             @depends = [];
         }
         my $bug = Bugzilla::Bug->new($bid);
@@ -335,6 +317,7 @@ sub ajax_tree_view {
 
         $bug->update();
     }
+    $dbh->bz_commit_transaction();
 
     if (Bugzilla->params->{"enhancedtreeview_mail_notifications"}) {
         if (exists Bugzilla->params->{'mail_delivery_method'}
@@ -343,7 +326,105 @@ sub ajax_tree_view {
         }
     }
 
-    $vars->{'json_text'} = 'hello';
+#    $vars->{'json_text'} = 'hello';
+}
+
+sub parse_relations_from_array
+{
+    my ($content, $rel_data) = @_;
+
+    # collect all dependecies for a bug
+    for my $bug_data (@{$content}) {
+        #  and $bug_data->{'parent_id'} ne 'root'
+        if ($bug_data->{'item_id'} ne 'root' and $bug_data->{'item_id'} ne '0') {
+            my $found = 0;
+            foreach my $bid (keys %{$rel_data}) {
+                # depends on
+                if ($bid eq $bug_data->{'item_id'}) {
+                    $found = 1;
+                    my $parent_relations = $rel_data->{ $bug_data->{'item_id'} }[1];
+                    my $bug_parent_id = $bug_data->{'parent_id'};
+                    if (not grep { $_ eq $bug_parent_id } @{$parent_relations}) {
+                        push @{$parent_relations}, $bug_parent_id;
+                    }
+                    last;
+                }
+            }
+            if (not $found) {
+                @{ $rel_data->{ $bug_data->{'item_id'} } } = ([], [ $bug_data->{'parent_id'} ]);
+            }
+
+            if ($bug_data->{'parent_id'} ne '0' and $bug_data->{'parent_id'} ne 'root') {
+                $found = 0;
+                foreach my $bid (keys %{$rel_data}) {
+                    # blocks on
+                    if ($bid eq $bug_data->{'parent_id'}) {
+                        $found = 1;
+                        my $dependent_relations = $rel_data->{ $bug_data->{'parent_id'} }[0];
+                        my $bug_dependent_id = $bug_data->{'item_id'};
+                        if (not grep { $_ eq $bug_dependent_id } @{$dependent_relations}) {
+                            push @{$dependent_relations}, $bug_dependent_id;
+                        }
+                        last;
+                    }
+                }
+                if (not $found) {
+                    @{ $rel_data->{ $bug_data->{'parent_id'} } } = ([ $bug_data->{'item_id'} ], []);
+                }
+            }
+        }
+    }
+}
+
+sub compare_original_to_database
+{
+    my ($original_rel_data) = @_;
+    my $different = 0;
+    my @processed_bugs = keys %{$original_rel_data};
+    for my $bug_id (@processed_bugs) {
+
+        my ($original_dependson, $original_blocked) = @{ $original_rel_data->{$bug_id} };
+
+        my $bug = Bugzilla::Bug->check($bug_id);
+        my $current_dependson = $bug->dependson;
+        my $current_blocked = $bug->blocked;
+
+        my @temp_array;
+        for my $item (@{$current_blocked})
+        {
+            if(grep { $_ eq $item } @processed_bugs) 
+            {
+	        push @temp_array, $item;
+            }
+        }
+        @{$current_blocked} = @temp_array;
+        @{$original_blocked} = grep { $_ != 0 } @{$original_blocked};
+        if (scalar @{$current_dependson} != scalar @{$original_dependson}) {
+            $different = 1;
+        }
+        else {
+            for my $currentid (@{$current_dependson})
+            {
+                if(not grep { $_ eq $currentid } @{$original_dependson}) 
+                {
+	            $different = 1;
+                }
+            }
+        }       
+        if (scalar @{$current_blocked} != scalar @{$original_blocked}) {
+            $different = 1;
+        }
+        else {
+            for my $currentid (@{$current_blocked})
+            {
+                if(not grep { $_ eq $currentid } @{$original_blocked}) 
+                {
+	            $different = 1;
+                }
+            }
+        }       
+    }
+    return $different;
 }
 
 1;

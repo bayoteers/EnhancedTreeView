@@ -19,6 +19,10 @@
      Eero Heino <eero.heino@nokia.com>
   */
 
+/**
+ * Global variables
+ */
+var arraied = [];
 
 function expclo(node)
 {
@@ -60,7 +64,7 @@ function bindSaveButton() {
     {
         $(this).click(function(e)
         {
-            var arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
+            arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
 
             var changed = [];
             var unchanged = [];
@@ -111,28 +115,37 @@ function bindSaveButton() {
 
             $.post('page.cgi?id=EnhancedTreeView_ajax.html',
                 {
+		    original: JSON.stringify(original_tree),
                     tree: JSON.stringify(changed),
-                },
-                function ()
-                {
-                    alert('Tree Saved');
-                    original_tree = $.extend(true, [], arraied);
-                    $('.edited').hide();
-
-                    $('.cancel_edit_mode').attr('disabled', 'disabled');
-                    $('.save_tree').attr('disabled', 'disabled');
-                    $('a[hrefnew]').each(function ()
-                    {
-                        elem = $(this);
-                        elem.attr('href', elem.attr('hrefnew'));
-                        elem.removeAttr('hrefnew');
-                    });
-                },
-                'json'); // post
+                }, saveResponse, 'text'); // post
 	    unsaved_changes = false;
         }); // click-function
     }); // each
 } // bindSaveButton
+
+function saveResponse(response, status, xhr) 
+{ 
+    var retObj = eval("("+ response+")");
+    if(retObj.errors)
+    {
+	alert(retObj.errormsg);
+    }
+    else
+    {
+        alert('Tree Saved');
+        original_tree = $.extend(true, [], arraied);
+        $('.edited').hide();
+
+        $('.cancel_edit_mode').attr('disabled', 'disabled');
+        $('.save_tree').attr('disabled', 'disabled');
+        $('a[hrefnew]').each(function ()
+        {
+            elem = $(this);
+            elem.attr('href', elem.attr('hrefnew'));
+            elem.removeAttr('hrefnew');
+        });
+    }
+}
 
 function add_bug(parent_elem, html)
 {
