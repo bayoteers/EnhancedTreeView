@@ -17,6 +17,7 @@
   
    Contributor(s):
      Eero Heino <eero.heino@nokia.com>
+     Visa Korhonen <visa.korhonen@symbio.com>
   */
 
 /**
@@ -30,93 +31,24 @@ function expclo(node)
     $(node).toggleClass('b_open').toggleClass('b_closed'); 
 }
 
-function nrKeys(a)
-{
-    var i = 0;
-    for (key in a)
-    {
-        i++;
-    }
-    return i;
-}
-function compare_associative_arrays(a, b)
-{
-   if (a == b)
-   {
-       return true;
-   }   
-   if (nrKeys(a) != nrKeys(b))
-   {
-       return false;
-   }
-   for (key in a)
-   {     
-     if (a[key] != b[key]) {
-         return false;
-     }
-   }
-   return true;
-}
-
 function bindSaveButton() {
 // save
     $('.save_tree').each(function ()
     {
         $(this).click(function(e)
         {
+	    /**
+	     * The whole tree is sent to server to be saved. It could be benefitial to
+	     * separate those parts of the tree, that have changed. That has however 
+	     * proved to be difficult to implement.
+	     * Removing separation of changed part is fix to bug #285271
+	     */
             arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
-
-            var changed = [];
-            var unchanged = [];
-
-            var touched_bugs = [];
-            var touched_parents = [];
-
-            for (var i=0; i < arraied.length; i++)
-            {
-                var found = false;
-
-                for (var k=0; k < original_tree.length; k++)
-                {
-                    if (compare_associative_arrays(arraied[i], original_tree[k]))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    // sending to server
-                    changed.push(arraied[i]);
-                    if ($.inArray(arraied[i]['item_id'], touched_bugs) == -1)
-                    {
-                        touched_bugs.push(arraied[i]['item_id']);
-                    }
-                    if ($.inArray(arraied[i]['parent_id'], touched_parents) == -1)
-                    {
-                        touched_parents.push(arraied[i]['parent_id']);
-                    }
-                } 
-		else
-                {
-                    unchanged.push(arraied[i]);
-                }
-            }
-
-            // loop through and also send the data that didn't change for a bug that had changes
-            for (var i=0; i < unchanged.length; i++)
-            {
-                if ($.inArray(unchanged[i]['item_id'], touched_bugs) > -1 || $.inArray(unchanged[i]['item_id'], touched_parents) > -1)
-                {
-                    changed.push(unchanged[i]);
-                }
-            }
 
             $.post('page.cgi?id=EnhancedTreeView_ajax.html',
                 {
 		    original: JSON.stringify(original_tree),
-                    tree: JSON.stringify(changed),
+		    tree: JSON.stringify(arraied),
                 }, saveResponse, 'text'); // post
 	    unsaved_changes = false;
         }); // click-function
