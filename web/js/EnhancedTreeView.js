@@ -17,41 +17,18 @@
   
    Contributor(s):
      Eero Heino <eero.heino@nokia.com>
+     Visa Korhonen <visa.korhonen@symbio.com>
   */
 
+/**
+ * Global variables
+ */
+var arraied = [];
 
 function expclo(node)
 {
     $(node).parent().next('ul').toggle();
     $(node).toggleClass('b_open').toggleClass('b_closed'); 
-}
-
-function nrKeys(a)
-{
-    var i = 0;
-    for (key in a)
-    {
-        i++;
-    }
-    return i;
-}
-function compare_associative_arrays(a, b)
-{
-   if (a == b)
-   {
-       return true;
-   }   
-   if (nrKeys(a) != nrKeys(b))
-   {
-       return false;
-   }
-   for (key in a)
-   {     
-     if (a[key] != b[key]) {
-         return false;
-     }
-   }
-   return true;
 }
 
 function bindSaveButton() {
@@ -60,78 +37,47 @@ function bindSaveButton() {
     {
         $(this).click(function(e)
         {
-            var arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
-
-            var changed = [];
-            var unchanged = [];
-
-            var touched_bugs = [];
-            var touched_parents = [];
-
-            for (var i=0; i < arraied.length; i++)
-            {
-                var found = false;
-
-                for (var k=0; k < original_tree.length; k++)
-                {
-                    if (compare_associative_arrays(arraied[i], original_tree[k]))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    // sending to server
-                    changed.push(arraied[i]);
-                    if ($.inArray(arraied[i]['item_id'], touched_bugs) == -1)
-                    {
-                        touched_bugs.push(arraied[i]['item_id']);
-                    }
-                    if ($.inArray(arraied[i]['parent_id'], touched_parents) == -1)
-                    {
-                        touched_parents.push(arraied[i]['parent_id']);
-                    }
-                } 
-		else
-                {
-                    unchanged.push(arraied[i]);
-                }
-            }
-
-            // loop through and also send the data that didn't change for a bug that had changes
-            for (var i=0; i < unchanged.length; i++)
-            {
-                if ($.inArray(unchanged[i]['item_id'], touched_bugs) > -1 || $.inArray(unchanged[i]['item_id'], touched_parents) > -1)
-                {
-                    changed.push(unchanged[i]);
-                }
-            }
+	    /**
+	     * The whole tree is sent to server to be saved. It could be benefitial to
+	     * separate those parts of the tree, that have changed. That has however 
+	     * proved to be difficult to implement.
+	     * Removing separation of changed part is fix to bug #285271
+	     */
+            arraied = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
 
             $.post('page.cgi?id=EnhancedTreeView_ajax.html',
                 {
-                    tree: JSON.stringify(changed),
-                },
-                function ()
-                {
-                    alert('Tree Saved');
-                    original_tree = $.extend(true, [], arraied);
-                    $('.edited').hide();
-
-                    $('.cancel_edit_mode').attr('disabled', 'disabled');
-                    $('.save_tree').attr('disabled', 'disabled');
-                    $('a[hrefnew]').each(function ()
-                    {
-                        elem = $(this);
-                        elem.attr('href', elem.attr('hrefnew'));
-                        elem.removeAttr('hrefnew');
-                    });
-                },
-                'json'); // post
+		    original: JSON.stringify(original_tree),
+		    tree: JSON.stringify(arraied),
+                }, saveResponse, 'text'); // post
+	    unsaved_changes = false;
         }); // click-function
     }); // each
 } // bindSaveButton
+
+function saveResponse(response, status, xhr) 
+{ 
+    var retObj = eval("("+ response+")");
+    if(retObj.errors)
+    {
+	alert(retObj.errormsg);
+    }
+    else
+    {
+        alert('Tree Saved');
+        original_tree = $.extend(true, [], arraied);
+        $('.edited').hide();
+
+        $('.cancel_edit_mode').attr('disabled', 'disabled');
+        $('.save_tree').attr('disabled', 'disabled');
+        $('a[hrefnew]').each(function ()
+        {
+            elem = $(this);
+            elem.attr('href', elem.attr('hrefnew'));
+            elem.removeAttr('hrefnew');
+        });
+    }
+}
 
 function add_bug(parent_elem, html)
 {
