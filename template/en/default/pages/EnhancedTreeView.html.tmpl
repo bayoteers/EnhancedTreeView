@@ -64,6 +64,7 @@
     // Global variables
     var unsaved_changes = false;
     var original_tree = [];
+    var edit_mode = false;
     var sortable_parent = null;
     var sortable_copy = false;
     var sticky = [];
@@ -75,6 +76,7 @@
             {
                 $(this).click(function()
                     {
+		        edit_mode = !edit_mode;
                         $('.edit_mode').toggle();
                         $('.read_mode').toggle();
                         $( ".sortable" ).sortable( "option", "disabled", false );

@@ -43,7 +43,7 @@
     #%]
   [% bug = tree.$bugid %]
   <li id="bug_[% bug.id %]" class='bug'  >
-    <span onMouseOver="toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
+    <span onMouseOver="if(!edit_mode) toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
           id="b[% bugid FILTER html %]" 
