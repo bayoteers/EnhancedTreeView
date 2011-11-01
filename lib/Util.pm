@@ -273,7 +273,7 @@ sub ajax_tree_view {
     }
     my $original = $json->allow_nonref->utf8->relaxed->decode($original_data);
     my %original_rel_data;
-    parse_relations_from_array($original, \%original_rel_data); 
+    parse_relations_from_array($original, \%original_rel_data);
     my $comp_err = compare_original_to_database(\%original_rel_data);
 
     if ($comp_err) {
@@ -290,7 +290,7 @@ sub ajax_tree_view {
 
     my %rel_data;
     my $rel_data_ref = \%rel_data;
-    parse_relations_from_array($content, $rel_data_ref); 
+    parse_relations_from_array($content, $rel_data_ref);
 
     my $mail_delivery_method = '';
     if (Bugzilla->params->{"enhancedtreeview_mail_notifications"}) {
@@ -326,11 +326,10 @@ sub ajax_tree_view {
         }
     }
 
-#    $vars->{'json_text'} = 'hello';
+    #    $vars->{'json_text'} = 'hello';
 }
 
-sub parse_relations_from_array
-{
+sub parse_relations_from_array {
     my ($content, $rel_data) = @_;
 
     # collect all dependecies for a bug
@@ -343,7 +342,7 @@ sub parse_relations_from_array
                 if ($bid eq $bug_data->{'item_id'}) {
                     $found = 1;
                     my $parent_relations = $rel_data->{ $bug_data->{'item_id'} }[1];
-                    my $bug_parent_id = $bug_data->{'parent_id'};
+                    my $bug_parent_id    = $bug_data->{'parent_id'};
                     if (not grep { $_ eq $bug_parent_id } @{$parent_relations}) {
                         push @{$parent_relations}, $bug_parent_id;
                     }
@@ -361,7 +360,7 @@ sub parse_relations_from_array
                     if ($bid eq $bug_data->{'parent_id'}) {
                         $found = 1;
                         my $dependent_relations = $rel_data->{ $bug_data->{'parent_id'} }[0];
-                        my $bug_dependent_id = $bug_data->{'item_id'};
+                        my $bug_dependent_id    = $bug_data->{'item_id'};
                         if (not grep { $_ eq $bug_dependent_id } @{$dependent_relations}) {
                             push @{$dependent_relations}, $bug_dependent_id;
                         }
@@ -376,25 +375,22 @@ sub parse_relations_from_array
     }
 }
 
-sub compare_original_to_database
-{
+sub compare_original_to_database {
     my ($original_rel_data) = @_;
-    my $different = 0;
-    my @processed_bugs = keys %{$original_rel_data};
+    my $different           = 0;
+    my @processed_bugs      = keys %{$original_rel_data};
     for my $bug_id (@processed_bugs) {
 
         my ($original_dependson, $original_blocked) = @{ $original_rel_data->{$bug_id} };
 
-        my $bug = Bugzilla::Bug->check($bug_id);
+        my $bug               = Bugzilla::Bug->check($bug_id);
         my $current_dependson = $bug->dependson;
-        my $current_blocked = $bug->blocked;
+        my $current_blocked   = $bug->blocked;
 
         my @temp_array;
-        for my $item (@{$current_blocked})
-        {
-            if(grep { $_ eq $item } @processed_bugs) 
-            {
-	        push @temp_array, $item;
+        for my $item (@{$current_blocked}) {
+            if (grep { $_ eq $item } @processed_bugs) {
+                push @temp_array, $item;
             }
         }
         @{$current_blocked} = @temp_array;
@@ -403,26 +399,22 @@ sub compare_original_to_database
             $different = 1;
         }
         else {
-            for my $currentid (@{$current_dependson})
-            {
-                if(not grep { $_ eq $currentid } @{$original_dependson}) 
-                {
-	            $different = 1;
+            for my $currentid (@{$current_dependson}) {
+                if (not grep { $_ eq $currentid } @{$original_dependson}) {
+                    $different = 1;
                 }
             }
-        }       
+        }
         if (scalar @{$current_blocked} != scalar @{$original_blocked}) {
             $different = 1;
         }
         else {
-            for my $currentid (@{$current_blocked})
-            {
-                if(not grep { $_ eq $currentid } @{$original_blocked}) 
-                {
-	            $different = 1;
+            for my $currentid (@{$current_blocked}) {
+                if (not grep { $_ eq $currentid } @{$original_blocked}) {
+                    $different = 1;
                 }
             }
-        }       
+        }
     }
     return $different;
 }
