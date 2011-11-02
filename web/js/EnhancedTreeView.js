@@ -68,7 +68,7 @@ function saveResponse(response, status, xhr)
         original_tree = $.extend(true, [], arraied);
         $('.edited').hide();
 
-        $('.cancel_edit_mode').attr('disabled', 'disabled');
+        // Cancel remains enabled
         $('.save_tree').attr('disabled', 'disabled');
         $('a[hrefnew]').each(function ()
         {
