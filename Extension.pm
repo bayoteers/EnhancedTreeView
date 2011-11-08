@@ -100,4 +100,11 @@ sub page_before_template {
 
 }
 
+sub template_before_process {
+    my ($self, $args) = @_;
+
+    my $vars = $args->{vars};
+    $vars->{treeviewurl} = "page.cgi?id=EnhancedTreeView.html";
+}
+
 __PACKAGE__->NAME;

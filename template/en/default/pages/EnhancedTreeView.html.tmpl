@@ -54,7 +54,6 @@
 
 [% PROCESS depthControlToolbar %]
 
-[%# INCLUDE tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
 [% PROCESS "pages/EnhancedTreeView_create_bug.html.tmpl" tree_section_g ids=b_data.dependson_ids type=1 bsdata = bugs_data %]
 
 [% PROCESS depthControlToolbar %]
@@ -65,6 +64,7 @@
     // Global variables
     var unsaved_changes = false;
     var original_tree = [];
+    var edit_mode = false;
     var sortable_parent = null;
     var sortable_copy = false;
     var sticky = [];
@@ -76,6 +76,7 @@
             {
                 $(this).click(function()
                     {
+		        edit_mode = !edit_mode;
                         $('.edit_mode').toggle();
                         $('.read_mode').toggle();
                         $( ".sortable" ).sortable( "option", "disabled", false );
@@ -429,7 +430,7 @@
     </td>
 
     <td class='edit_mode'>
-        <input type='button' disabled='disabled' class='cancel_edit_mode' value='Cancel' onclick="history.go(0); unsaved_changes=false;" />
+        <input type='button' class='cancel_edit_mode' value='Cancel' onclick="history.go(0); unsaved_changes=false;" />
         <input type='button' disabled='disabled' class='save_tree' value='Save Tree' />
     </td>
     <td class='loading_element'>

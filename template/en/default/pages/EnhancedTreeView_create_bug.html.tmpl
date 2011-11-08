@@ -19,7 +19,6 @@
   #   Eero Heino <eero.heino@nokia.com>
   #%]
 
-[%# BLOCK tree_section_g %]
   [%# INTERFACE
     #   - ids: a list of bug IDs to be displayed as children
     #   - type: the type of tree. 1 = depends on, 2 = blockeds
@@ -53,24 +52,10 @@
     <ul class="tree sortable root no-nest" id='root'>
       <li id='foo_0'><span></span>
         <ul>
-        [%# PROCESS "pages/EnhancedTreeView_display_tree.html.tmpl" tree=$tree_name %]
         [% PROCESS "pages/EnhancedTreeView_display_tree.html.tmpl" bugs_data=bugs_data %]
-          [%# FOREACH b_data IN bugs_data %]
-            [%# dependson_tree = b_data.dependson_tree %]
-            [%# ids = b_data.dependson_ids %]
-            [%# dependson_tree=b_data.dependson_tree %]
-            [%# blocked_tree=b_data.blocked_tree %]
-            [%# blocked_ids=b_data.blocked_ids %]
-            [%# realdepth=b_data.realdepth %]
-            [%# bugid=b_data.bugid %]
-            [%# maxdepth=b_data.maxdepth %]
-            [%# hide_resolved=b_data.hide_resolved %]
-
-          [%# END %]
         </ul>
       </li>
     </ul>
-[%# END %]
 
 
 

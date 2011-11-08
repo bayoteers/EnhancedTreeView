@@ -31,7 +31,6 @@
     [% maxdepth=b_data.maxdepth %]
     [% hide_resolved=b_data.hide_resolved %]
 
-    [%# PROCESS "pages/EnhancedTreeView_display_tree.html.tmpl" tree=$tree_name %]
     [% tree_name = "dependson_tree" %]
     [% INCLUDE display_tree tree=dependson_tree %]
   [% END %]
@@ -44,7 +43,7 @@
     #%]
   [% bug = tree.$bugid %]
   <li id="bug_[% bug.id %]" class='bug'  >
-    <span onMouseOver="toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
+    <span onMouseOver="if(!edit_mode) toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
           id="b[% bugid FILTER html %]" 
@@ -66,10 +65,6 @@
             no_tds = 1, value = 'task',
             editable = 1 %]
         <input class='create' type='submit' name='submit' value='Create' >
-
-[% #FOREACH field_name = bug.fields() %]
-[% #field_name %]
-[% #END %]
 
         <input type='hidden' name='product' value='[% bug.product %]' >
         <input type='hidden' name='component' value='[% bug.component %]' >
@@ -109,24 +104,19 @@
         ajaxify('[% bug.id %]');
     </script>
     </span>
-    [%# IF global.seen.$bugid %]
+    [% IF global.seen.$bugid %]
       <b style='color: red;'><a title="Already displayed above; click to locate"
             onclick="duplicated('b[% bugid FILTER html %]')"
             href="#b[% bugid %]">(*)</a></b>
-<!--    </span>-->
-
     </span>
-    [%# ELSIF tree.dependencies.$bugid.size %]
+    [% ELSE %]
     </span>
       <ul id='children_[% bug.id %]'>
         [% FOREACH depid = tree.dependencies.$bugid %]
           [% INCLUDE display_tree bugid=depid %]
         [% END %]
       </ul>
-    [%# ELSE %]
-    </span>
-    <!--</span>-->
-    [%# END %]
+    [% END %]
   </li>
   [% global.seen.$bugid = 1 %]
 [% END %]
