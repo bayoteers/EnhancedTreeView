@@ -302,13 +302,13 @@ sub ajax_tree_view {
         }
     }
 
-    my $dbh = Bugzilla->dbh;
+    $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
     my @all_bugs = keys %rel_data;
     for my $bid (@all_bugs) {
         my (@blocks, @depends) = @{ $rel_data_ref->{$bid} };
 
-        if (@depends and (scalar @depends[0] == 0 or @depends[0] == 'root')) {
+        if (@depends and (scalar $depends[0] == 0 or $depends[0] == 'root')) {
             @depends = [];
         }
         my $bug = Bugzilla::Bug->new($bid);
