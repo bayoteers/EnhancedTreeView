@@ -353,7 +353,7 @@
      [%# set to one form %]
      <input type="submit" id="change_maxdepth"
        value="&nbsp;1&nbsp;" 
-       [% "disabled" IF realdepth < 2 || maxdepth == 1 %]>
+       [% "disabled" IF (realdepth && realdepth < 2) || (maxdepth && maxdepth == 1) %]>
      <input name="bug_id" type="hidden" value="[% bug_id_list %]">
      <input name='id' type='hidden' value='treeview.html' />
      <input name="maxdepth" type="hidden" value="1">
@@ -368,13 +368,24 @@
          Allow subtracting only when realdepth and maxdepth > 1 %]
      <input name='id' type='hidden' value='treeview.html' />
      <input name="bug_id" type="hidden" value="[% bug_id_list %]">
-     <input name="maxdepth" type="hidden" value="[%
-         maxdepth == 1 ? 1
-                       : ( maxdepth ? maxdepth - 1 : realdepth - 1 )
-     %]">
+     <input name="maxdepth" type="hidden" value="
+       [% IF maxdepth %]
+         [% IF maxdepth == 1 %]  
+           1 
+         [% ELSE %]
+           [% maxdepth - 1 %]
+         [% END %]
+       [% ELSE %]
+         [% IF realdepth %]
+           [% realdepth - 1 %]
+         [% ELSE %]
+           1
+         [% END %]
+       [% END %] 
+       ">
      <input name="hide_resolved" type="hidden" value="[% hide_resolved %]">
      <input type="submit" id="decrease_depth" value="&nbsp;&lt;&nbsp;"
-       [% "disabled" IF realdepth < 2 || ( maxdepth && maxdepth < 2 ) %]>
+       [% "disabled" IF (realdepth && realdepth < 2) || ( maxdepth && maxdepth < 2) %]>
    </form>
    </td>
 
@@ -391,7 +402,7 @@
      <input name="hide_resolved" type="hidden" value="[% hide_resolved %]">
      <noscript>
        <input type="submit" id="change_depth" value="Change"
-              [% "disabled" IF realdepth < 2 %]>
+              [% "disabled" IF (realdepth && realdepth < 2) %]>
      </noscript>
    </form>
    </td>
@@ -408,7 +419,7 @@
      [% END %]
      <input name="hide_resolved" type="hidden" value="[% hide_resolved %]">
      <input type="submit" id="increase_depth" value="&nbsp;&gt;&nbsp;" 
-        [% "disabled" IF realdepth < 2 || !maxdepth || maxdepth >= realdepth %]>
+        [% "disabled" IF !realdepth || realdepth < 2 || !maxdepth || maxdepth >= realdepth %]>
    </form>
    </td>
 
