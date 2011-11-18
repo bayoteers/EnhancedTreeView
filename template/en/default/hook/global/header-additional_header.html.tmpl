@@ -1,0 +1,22 @@
+[% USE String %]
+[% here = String.new(template.name); here = here.lower() %]
+[% IF here.search('bug/show.html') %]
+<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
+<script type="text/javascript">
+function changeurl() {
+    var td = document.getElementById('show_dependency_tree_or_graph');
+    if(!td) {
+        return;
+    }
+    var anch_array = td.getElementsByTagName("a");
+    if(anch_array) {
+        var url = anch_array[0].href;
+        url = url.replace('showdependencytree.cgi?id=', 'page.cgi?id=EnhancedTreeView.html&bug_id=');
+        anch_array[0].href = url;
+    }
+}
+
+$(document).ready(changeurl);
+
+</script>
+[% END %]

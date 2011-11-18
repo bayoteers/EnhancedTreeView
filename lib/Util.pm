@@ -62,10 +62,10 @@ sub GenerateTree {
 
     # Record this depth in the global $realdepth variable if it's farther
     # than we've gone before.
-    if(!$depth) {
+    if (!$depth) {
         $depth = 0;
     }
-    if(!$realdepth) {
+    if (!$realdepth) {
         $realdepth = 0;
     }
     $realdepth = max($realdepth, $depth);
