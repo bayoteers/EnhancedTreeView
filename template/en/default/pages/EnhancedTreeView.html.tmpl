@@ -76,7 +76,7 @@
             {
                 $(this).click(function()
                     {
-		        edit_mode = !edit_mode;
+                        edit_mode = !edit_mode;
                         $('.edit_mode').toggle();
                         $('.read_mode').toggle();
                         $( ".sortable" ).sortable( "option", "disabled", false );
@@ -269,11 +269,11 @@
                             {
                                 clone_link.attr('hrefnew', href.replace('blocked=', 'blocked='+p_id));
                             }
-			    if(sortable_parent_id != p_id && (sortable_parent_id != 'foo_0' || p_id != ''))
-			    {
-				//alert('sortable_parent_id: '+sortable_parent_id+' p_id:'+p_id);
-				unsaved_changes = true;
-			    }
+                            if(sortable_parent_id != p_id && (sortable_parent_id != 'foo_0' || p_id != ''))
+                            {
+                                //alert('sortable_parent_id: '+sortable_parent_id+' p_id:'+p_id);
+                                unsaved_changes = true;
+                            }
                         });
                     }
 
@@ -299,18 +299,18 @@
     bindSaveButton();
 
     $(window).unload(
-    	function() 
-    	{
-	    if(unsaved_changes)
-	    {
-		if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
-		{
-    		    $('.save_tree').each(function ()
-    		    {
-        	        $(this).click();
-	            });
-		}
-	    } 
+        function() 
+        {
+            if(unsaved_changes)
+            {
+                if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
+                {
+                    $('.save_tree').each(function ()
+                    {
+                        $(this).click();
+                    });
+                }
+            } 
         } 
     );
 });
