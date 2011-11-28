@@ -94,9 +94,9 @@ function ajaxify(id)
     $('#create_'+id).ajaxForm(options);
 }
 
-function toggle_vis(elem, id, arg)
+function t_visibility(id, arg)
 {
-    var obj = $(elem).children(id);
+    var obj = $('#'+id);
     if (arg == 'show')
     {
         obj.show();

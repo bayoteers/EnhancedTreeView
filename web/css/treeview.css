@@ -80,4 +80,6 @@ input.create {
 .finline select {
     font-size: 9px;
 }
+
+li a:hover {text-decoration:underline;}
 /*.x-form-item {margin-bottom: 20px; border: 2px solid red;}*/

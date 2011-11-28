@@ -43,7 +43,6 @@
     #%]
   [% bug = tree.$bugid %]
   <li id="bug_[% bug.id %]" class='bug'  >
-    <span onMouseOver="if(!edit_mode) toggle_vis(this, '#bug_[% bug.id %]_create', 'show');" onMouseOut="toggle_vis(this, '#bug_[% bug.id %]_create','hide');">
     [%- INCLUDE bullet bugid=bugid tree=tree -%]
     <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
           id="b[% bugid FILTER html %]" 
@@ -51,66 +50,120 @@
             onMouseover="duplicatedover('b[% bugid FILTER html %]')"
             onMouseout="duplicatedout('b[% bugid FILTER html %]')"
           [% END %]>
-      [%- INCLUDE buglink bug=bug bugid=bugid %]
-    </span>
-   <span id="bug_[% bug.id %]_create" class='hide finline' onClick="event.stopPropagation(); sticky.push('#bug_[% bug.id %]_create'); // alert(sticky.length);">
-        <form  class='finline' id='create_[% bug.id %]' action='page.cgi'>
-        <input type='hidden' value='EnhancedTreeView_display_tree.html' name='id' >
-        <input type='hidden' name='method' value='create' >
-        <input class='create' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
-        <input class='create' type='text' name='short_desc' value='summary' >
-        <input class='create' type='text' name='comment' value=' description' >
-       [%+ INCLUDE bug/field.html.tmpl
-            bug = bug, field = select_fields.bug_severity,
-            no_tds = 1, value = 'task',
-            editable = 1 %]
-        <input class='create' type='submit' name='submit' value='Create' >
-
-        <input type='hidden' name='product' value='[% bug.product %]' >
-        <input type='hidden' name='component' value='[% bug.component %]' >
-        <input type='hidden' name='version' value='unspecified' >
-        <input type='hidden' name='rep_platform' value='[% bug.rep_platform %]' >
-        <input type='hidden' name='op_sys' value='All' >
-        <input type='hidden' name='bug_status' value='NEW' >
-        <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' >
-        <input type='hidden' name='qa_contact' value='' >
-        <input type='hidden' name='cc' value='' >
-        <input type='hidden' name='deadline' value='' >
-        <input type='hidden' name='cf_occurence' value='---' >
-        <input type='hidden' name='cf_operator' value='' >
-        <input type='hidden' name='cf_tescase' value='' >
-        <input type='hidden' name='cf_req' value='' >
-        <input type='hidden' name='cf_localisation' value='---' >
-        <input type='hidden' name='cf_verification' value='---' >
-        <input type='hidden' name='cf_release' value='---' >
-        <input type='hidden' name='keywords' value='' >
-        <input type='hidden' name='dependson' value='' >
-        <input type='hidden' name='blocked' value='[% bug.id %]' >
-        <input type='hidden' name='contenttypemethod' value='autodetect' >
-        <!--
-        <input type='hidden' name='bug_file_loc' =  http://
-        <input type='hidden' name='token' =  aKCkgBRP7m
-        <input type='hidden' name='contenttypeselection' =  text/plain
-        <input type='hidden' name='contenttypeentry' =  -->
-        </form>
-        <a href='enter_bug.cgi?product=[% bug.product %]&amp;component=[% bug.component %]=&amp;blocked=[% bug.id %][% FOREACH field_name = inherited_fields %]&amp;[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]'>
-            [create bug]
+      [% isclosed = !bug.isopened %]
+      [% FILTER closed(isclosed) -%]
+        <a title="[% INCLUDE buginfo bug=bug %]"
+            href="show_bug.cgi?id=[% bugid %]">
+          <b>[%- bugid %]:</b>
+        </a>
+        <a href="" onclick="return false;">
+          [% display_value("bug_status", bug.bug_status) FILTER html -%]
         </a>
         &nbsp;
-        <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&amp;product=[% bug.product %]&amp;component=[% bug.component %]&amp;blocked=[% FOREACH block = bug.blocked %][% block %],[% END %][% FOREACH field_name = inherited_fields %]&amp;[% field_name %]=[% IF (field_name == "assigned_to") %][% bug.$field_name.email %][% ELSE %][% bug.$field_name %][% END %][% END %]&amp;dependson='>
-            [clone bug]
+        <a href="" onclick="return false;">
+          [% bug.assigned_to.login FILTER email FILTER html %]
         </a>
-    <script type="text/JavaScript">
-        ajaxify('[% bug.id %]');
-    </script>
-    </span>
-    [% IF global.seen.$bugid %]
-      <b style='color: red;'><a title="Already displayed above; click to locate"
-            onclick="duplicated('b[% bugid FILTER html %]')"
-            href="#b[% bugid %]">(*)</a></b>
-    </span>
-    [% ELSE %]
-    </span>
+
+        [% IF isclosed %]
+        <span>
+        [% ELSE %]
+        <span onMouseOver="if(!edit_mode) t_visibility('bug_[% bug.id %]_create', 'show');" onMouseOut="t_visibility('bug_[% bug.id %]_create','hide');">
+        [% END %]
+          <span title="[% INCLUDE buginfo bug=bug %]">
+
+            <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
+            <span class="summ_info">[[% INCLUDE buginfo %]]</span>
+
+            <a href="showdependencytree.cgi?id=[% bugid FILTER url_quote %]"
+                class="tree_link">
+              <img src="skins/standard/dependency-tree/tree.png"
+                  alt="See dependency tree for [% terms.bug %] [%+ bugid FILTER html %]">
+            </a>
+          </span>
+        [% END %]
+        <span id="bug_[% bug.id %]_create" class='hide finline' onClick="event.stopPropagation(); sticky.push('#bug_[% bug.id %]_create'); // alert(sticky.length);">
+          <form  class='finline' id='create_[% bug.id %]' action='page.cgi'>
+            <input type='hidden' value='EnhancedTreeView_display_tree.html' name='id' >
+            <input type='hidden' name='method' value='create' >
+            <input class='create' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
+            <input class='create' type='text' name='short_desc' value='summary' >
+            <input class='create' type='text' name='comment' value=' description' >
+            [%+ INCLUDE bug/field.html.tmpl
+              bug = bug, field = select_fields.bug_severity,
+              no_tds = 1, value = 'task',
+              editable = 1 %]
+            <input class='create' type='submit' name='submit' value='Create' >
+
+            <input type='hidden' name='product' value='[% bug.product %]' >
+            <input type='hidden' name='component' value='[% bug.component %]' >
+            <input type='hidden' name='version' value='unspecified' >
+            <input type='hidden' name='rep_platform' value='[% bug.rep_platform %]' >
+            <input type='hidden' name='op_sys' value='All' >
+            <input type='hidden' name='bug_status' value='NEW' >
+            <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' >
+            <input type='hidden' name='qa_contact' value='' >
+            <input type='hidden' name='cc' value='' >
+            <input type='hidden' name='deadline' value='' >
+            <input type='hidden' name='cf_occurence' value='---' >
+            <input type='hidden' name='cf_operator' value='' >
+            <input type='hidden' name='cf_tescase' value='' >
+            <input type='hidden' name='cf_req' value='' >
+            <input type='hidden' name='cf_localisation' value='---' >
+            <input type='hidden' name='cf_verification' value='---' >
+            <input type='hidden' name='cf_release' value='---' >
+            <input type='hidden' name='keywords' value='' >
+            <input type='hidden' name='dependson' value='' >
+            <input type='hidden' name='blocked' value='[% bug.id %]' >
+            <input type='hidden' name='contenttypemethod' value='autodetect' >
+            <!--
+              <input type='hidden' name='bug_file_loc' =  http://
+              <input type='hidden' name='token' =  aKCkgBRP7m
+              <input type='hidden' name='contenttypeselection' =  text/plain
+              <input type='hidden' name='contenttypeentry' =  
+            -->
+          </form>
+          <a href='enter_bug.cgi?product=[% bug.product %]&amp;component=[% bug.component %]=&amp;blocked=[% bug.id %]
+              [% FOREACH field_name = inherited_fields %]
+                &amp;[% field_name %]=
+                [% IF (field_name == "assigned_to") %]
+                  [% bug.$field_name.email %]
+                [% ELSE %]
+                  [% bug.$field_name %]
+                [% END %]
+              [% END %]'>
+            [create bug]
+          </a>
+          &nbsp;
+          <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&amp;product=[% bug.product %]&amp;component=[% bug.component %]&amp;blocked=
+              [% FOREACH block = bug.blocked %]
+                [% block %],
+              [% END %]
+              [% FOREACH field_name = inherited_fields %]
+                &amp;[% field_name %]=
+                [% IF (field_name == "assigned_to") %]
+                  [% bug.$field_name.email %]
+                [% ELSE %]
+                  [% bug.$field_name %]
+                [% END %]
+              [% END %]
+              &amp;dependson='>
+            [clone bug]
+          </a>
+          <script type="text/JavaScript">
+              ajaxify('[% bug.id %]');
+          </script>
+        </span>
+      </span>
+      [% IF global.seen.$bugid %]
+        <b style='color: red;'>
+          <a title="Already displayed above; click to locate"
+              onclick="duplicated('b[% bugid FILTER html %]')"
+              href="#b[% bugid %]">
+            (*)
+          </a>
+        </b>
+      [% ELSE %]
+        </span>
       <ul id='children_[% bug.id %]'>
         [% FOREACH depid = tree.dependencies.$bugid %]
           [% INCLUDE display_tree bugid=depid %]
@@ -141,9 +194,13 @@ font-size: 400%;
     <a title="[% INCLUDE buginfo bug=bug %]"
        href="show_bug.cgi?id=[% bugid %]">
       <b>[%- bugid %]:</b>
-      <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
-      <span class="summ_info">[[% INCLUDE buginfo %]]</span>
     </a>
+    <span title="[% INCLUDE buginfo bug=bug %]">
+      <span onMouseOver="if(!edit_mode) t_visibility('bug_[% bug.id %]_create', 'show');" onMouseOut="t_visibility('bug_[% bug.id %]_create','hide');">
+        <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
+        <span class="summ_info">[[% INCLUDE buginfo %]]</span>
+      </span>
+    </span>
     <a href="showdependencytree.cgi?id=[% bugid FILTER url_quote %]"
        class="tree_link">
       <img src="skins/standard/dependency-tree/tree.png"
