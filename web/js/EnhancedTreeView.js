@@ -25,11 +25,15 @@
  */
 var arraied = [];
 
-function expclo(node)
-{
-    $(node).parent().next('ul').toggle();
-    $(node).toggleClass('b_open').toggleClass('b_closed'); 
-}
+
+// This function did the job almost right.
+//function expclo(node)
+//{
+//    var par = $(node).parent();
+//    var ne_ul = par.find('ul');
+//    ne_ul.toggle();
+//    $(node).toggleClass('b_open').toggleClass('b_closed'); 
+//}
 
 function bindSaveButton() {
 // save

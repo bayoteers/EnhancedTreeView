@@ -177,7 +177,7 @@
 [% BLOCK bullet %]
   [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
     [% extra_class = " b_open" %]
-    [% extra_args = 'onclick="expclo(this);"' %]
+    [% extra_args = 'onclick="return doToggle(this, event);"' %]
   [% END %]
   <a name="b[% bugid %]" 
      class="b [%+ extra_class FILTER none %]"
