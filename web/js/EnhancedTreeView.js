@@ -25,6 +25,12 @@
  */
 var arraied = [];
 
+function doPreToggle(elem, event)
+{
+    var par_li = elem.parentNode.parentNode.parentNode.parentNode.parentNode;
+    doToggle(par_li, event);
+    $(elem).toggleClass('b_open').toggleClass('b_closed');
+}
 
 // This function did the job almost right.
 //function expclo(node)

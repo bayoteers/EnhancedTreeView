@@ -18,7 +18,41 @@
   # Contributor(s):
   #   Eero Heino <eero.heino@nokia.com>
   #%]
+<link rel="stylesheet" href="extensions/EnhancedTreeView/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
+[% status_field = Bugzilla.get_fields({ name => 'bug_status' }).first %]
+
+<script id="bug_status_field_html" type="text/html">
+[% PROCESS "bug/field.html.tmpl"
+        bug = bug, field = status_field,
+        no_tds = 1, value = 0,
+        editable = 1 %]
+</script>
+
+<script type="text/javascript">
+
+function getBugStatusHtml(bug_id, old_content)
+{
+    var bug_status_field = $("#bug_status_field_html").html();
+
+    // HTML of bug severy contains also JavaScript, that has been commented out
+    // This is a problem, because HTML contains script-tag. Parsing HTML from
+    // HTML-template stops, when 'script' end tag is encountered. 
+    // This makes parsed string to contain 'script' opening tag without ending tag.
+    // This in turn makes all HTML disappear after 'script' tag, when string is 
+    // concatenated into other text. Solution is to rip off 'script' tag from string.
+    var split_index = bug_status_field.indexOf('<script');
+    bug_status_field = bug_status_field.substring(0, split_index);
+
+    var template = $("#SelectFieldTmpl").html();
+    template = template.replace(/<field_name>/g, 'bug_status');
+    template = template.replace(/<bug_id>/g, bug_id);
+    template = template.replace('<select_field>', bug_status_field);
+    template = template.replace('<old_content>', old_content);
+    return template;
+}
+
+</script>
 
   [% FOREACH b_data IN bugs_data %]
     [% dependson_tree = b_data.dependson_tree %]
@@ -42,128 +76,146 @@
     #   - tree: a hash of bug objects and of bug dependencies
     #%]
   [% bug = tree.$bugid %]
-  <li id="bug_[% bug.id %]" class='bug'  >
-    [%- INCLUDE bullet bugid=bugid tree=tree -%]
-    <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
-          id="b[% bugid FILTER html %]" 
-          [% IF global.seen.$bugid %]
-            onMouseover="duplicatedover('b[% bugid FILTER html %]')"
-            onMouseout="duplicatedout('b[% bugid FILTER html %]')"
-          [% END %]>
-      [% isclosed = !bug.isopened %]
-      [% FILTER closed(isclosed) -%]
-        <a title="[% INCLUDE buginfo bug=bug %]"
-            href="show_bug.cgi?id=[% bugid %]">
-          <b>[%- bugid %]:</b>
-        </a>
-        <a href="" onclick="return false;">
-          [% display_value("bug_status", bug.bug_status) FILTER html -%]
-        </a>
-        &nbsp;
-        <a href="" onclick="return false;">
-          [% bug.assigned_to.login FILTER email FILTER html %]
-        </a>
+  <li id="bug_[% bug.id %]" class='bug'>
+    <span>
+      <table>
+        <tr>
+          <td>
 
-        [% IF isclosed %]
-        <span>
-        [% ELSE %]
-        <span onMouseOver="if(!edit_mode) t_visibility('bug_[% bug.id %]_create', 'show');" onMouseOut="t_visibility('bug_[% bug.id %]_create','hide');">
-        [% END %]
-          <span title="[% INCLUDE buginfo bug=bug %]">
-
-            <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
-            <span class="summ_info">[[% INCLUDE buginfo %]]</span>
-
-            <a href="showdependencytree.cgi?id=[% bugid FILTER url_quote %]"
-                class="tree_link">
-              <img src="skins/standard/dependency-tree/tree.png"
-                  alt="See dependency tree for [% terms.bug %] [%+ bugid FILTER html %]">
-            </a>
-          </span>
-        [% END %]
-        <span id="bug_[% bug.id %]_create" class='hide finline' onClick="event.stopPropagation(); sticky.push('#bug_[% bug.id %]_create'); // alert(sticky.length);">
-          <form  class='finline' id='create_[% bug.id %]' action='page.cgi'>
-            <input type='hidden' value='EnhancedTreeView_display_tree.html' name='id' >
-            <input type='hidden' name='method' value='create' >
-            <input class='create' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
-            <input class='create' type='text' name='short_desc' value='summary' >
-            <input class='create' type='text' name='comment' value=' description' >
-            [%+ INCLUDE bug/field.html.tmpl
-              bug = bug, field = select_fields.bug_severity,
-              no_tds = 1, value = 'task',
-              editable = 1 %]
-            <input class='create' type='submit' name='submit' value='Create' >
-
-            <input type='hidden' name='product' value='[% bug.product %]' >
-            <input type='hidden' name='component' value='[% bug.component %]' >
-            <input type='hidden' name='version' value='unspecified' >
-            <input type='hidden' name='rep_platform' value='[% bug.rep_platform %]' >
-            <input type='hidden' name='op_sys' value='All' >
-            <input type='hidden' name='bug_status' value='NEW' >
-            <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' >
-            <input type='hidden' name='qa_contact' value='' >
-            <input type='hidden' name='cc' value='' >
-            <input type='hidden' name='deadline' value='' >
-            <input type='hidden' name='cf_occurence' value='---' >
-            <input type='hidden' name='cf_operator' value='' >
-            <input type='hidden' name='cf_tescase' value='' >
-            <input type='hidden' name='cf_req' value='' >
-            <input type='hidden' name='cf_localisation' value='---' >
-            <input type='hidden' name='cf_verification' value='---' >
-            <input type='hidden' name='cf_release' value='---' >
-            <input type='hidden' name='keywords' value='' >
-            <input type='hidden' name='dependson' value='' >
-            <input type='hidden' name='blocked' value='[% bug.id %]' >
-            <input type='hidden' name='contenttypemethod' value='autodetect' >
-            <!--
-              <input type='hidden' name='bug_file_loc' =  http://
-              <input type='hidden' name='token' =  aKCkgBRP7m
-              <input type='hidden' name='contenttypeselection' =  text/plain
-              <input type='hidden' name='contenttypeentry' =  
-            -->
-          </form>
-          <a href='enter_bug.cgi?product=[% bug.product %]&amp;component=[% bug.component %]=&amp;blocked=[% bug.id %]
-              [% FOREACH field_name = inherited_fields %]
-                &amp;[% field_name %]=
-                [% IF (field_name == "assigned_to") %]
-                  [% bug.$field_name.email %]
+            [%- INCLUDE bullet bugid=bugid tree=tree -%]
+            <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
+                id="b[% bugid FILTER html %]" 
+                [% IF global.seen.$bugid %]
+                  onMouseover="duplicatedover('b[% bugid FILTER html %]')"
+                  onMouseout="duplicatedout('b[% bugid FILTER html %]')"
+                [% END %]>
+              [% isclosed = !bug.isopened %]
+              [% FILTER closed(isclosed) -%]
+                <a title="[% INCLUDE buginfo bug=bug %]"
+                    href="show_bug.cgi?id=[% bugid %]">
+                  <b>[%- bugid %]:</b>
+                </a>
+              </td>
+              <td>
+                [% PROCESS "bug/field.html.tmpl"
+                    bug = bug, field = status_field,
+                    no_tds = 1, value = 0,
+                    editable = 1 %]
+	      </td>
+	      <td>
+	        <div class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" 
+                    onclick="checkIfEditedFieldChanged(false);">
+                </div>
+	      </td>
+	      <td>
+	        <div class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></div>
+	      </td>
+              <td>
+                &nbsp;
+                <a href="" onclick="return false;">
+                  [% bug.assigned_to.login FILTER email FILTER html %]
+                </a>
+                [% IF isclosed %]
+                  <span>
                 [% ELSE %]
-                  [% bug.$field_name %]
+                  <span onMouseOver="if(!edit_mode) t_visibility('bug_[% bug.id %]_create', 'show');" 
+                      onMouseOut="t_visibility('bug_[% bug.id %]_create','hide');">
                 [% END %]
-              [% END %]'>
-            [create bug]
-          </a>
-          &nbsp;
-          <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&amp;product=[% bug.product %]&amp;component=[% bug.component %]&amp;blocked=
-              [% FOREACH block = bug.blocked %]
-                [% block %],
-              [% END %]
-              [% FOREACH field_name = inherited_fields %]
-                &amp;[% field_name %]=
-                [% IF (field_name == "assigned_to") %]
-                  [% bug.$field_name.email %]
-                [% ELSE %]
-                  [% bug.$field_name %]
-                [% END %]
-              [% END %]
-              &amp;dependson='>
-            [clone bug]
-          </a>
-          <script type="text/JavaScript">
-              ajaxify('[% bug.id %]');
-          </script>
-        </span>
+                <span title="[% INCLUDE buginfo bug=bug %]">
+                  <span class="summ_text">[%+ bug.short_desc FILTER html %]</span>
+                  <span class="summ_info">[[% INCLUDE buginfo %]]</span>
+
+                  <a href="showdependencytree.cgi?id=[% bugid FILTER url_quote %]"
+                    class="tree_link">
+                    <img src="skins/standard/dependency-tree/tree.png"
+                      alt="See dependency tree for [% terms.bug %] [%+ bugid FILTER html %]">
+                  </a>
+                </span>
+              [% END %] <!-- Filter -->
+              <span id="bug_[% bug.id %]_create" class='hide finline' onClick="event.stopPropagation(); sticky.push('#bug_[% bug.id %]_create'); // alert(sticky.length);">
+                <form  class='finline' id='create_[% bug.id %]' action='page.cgi'>
+                  <input type='hidden' value='EnhancedTreeView_display_tree.html' name='id' >
+                  <input type='hidden' name='method' value='create' >
+                  <input class='create' type='text' style='width: 40px;' name='estimated_time' value='0.00' >
+                  <input class='create' type='text' name='short_desc' value='summary' >
+                  <input class='create' type='text' name='comment' value=' description' >
+                  [%+ INCLUDE bug/field.html.tmpl
+                      bug = bug, field = select_fields.bug_severity,
+                      no_tds = 1, value = 'task',
+                      editable = 1 %]
+                  <input class='create' type='submit' name='submit' value='Create' >
+                  <input type='hidden' name='product' value='[% bug.product %]' >
+                  <input type='hidden' name='component' value='[% bug.component %]' >
+                  <input type='hidden' name='version' value='unspecified' >
+                  <input type='hidden' name='rep_platform' value='[% bug.rep_platform %]' >
+                  <input type='hidden' name='op_sys' value='All' >
+                  <input type='hidden' name='bug_status' value='NEW' >
+                  <input type='hidden' name='assigned_to' value='[% bug.assigned_to.login_name %]' >
+                  <input type='hidden' name='qa_contact' value='' >
+                  <input type='hidden' name='cc' value='' >
+                  <input type='hidden' name='deadline' value='' >
+                  <input type='hidden' name='cf_occurence' value='---' >
+                  <input type='hidden' name='cf_operator' value='' >
+                  <input type='hidden' name='cf_tescase' value='' >
+                  <input type='hidden' name='cf_req' value='' >
+                  <input type='hidden' name='cf_localisation' value='---' >
+                  <input type='hidden' name='cf_verification' value='---' >
+                  <input type='hidden' name='cf_release' value='---' >
+                  <input type='hidden' name='keywords' value='' >
+                  <input type='hidden' name='dependson' value='' >
+                  <input type='hidden' name='blocked' value='[% bug.id %]' >
+                  <input type='hidden' name='contenttypemethod' value='autodetect' >
+                </form>
+                <a href='enter_bug.cgi?product=[% bug.product %]&amp;component=[% bug.component %]=&amp;blocked=[% bug.id %]
+                  [% FOREACH field_name = inherited_fields %]
+                    &amp;[% field_name %]=
+                    [% IF (field_name == "assigned_to") %]
+                      [% bug.$field_name.email %]
+                    [% ELSE %]
+                      [% bug.$field_name %]
+                    [% END %]
+                  [% END %]'>
+                  [create bug]
+                </a>
+                &nbsp;
+                <a class='clone_link' href='enter_bug.cgi?cloned_bug_id=[% bug.id %]&amp;product=[% bug.product %]&amp;component=[% bug.component %]&amp;blocked=
+                  [% FOREACH block = bug.blocked %]
+                    [% block %],
+                  [% END %]
+                  [% FOREACH field_name = inherited_fields %]
+                    &amp;[% field_name %]=
+                    [% IF (field_name == "assigned_to") %]
+                      [% bug.$field_name.email %]
+                    [% ELSE %]
+                      [% bug.$field_name %]
+                    [% END %]
+                  [% END %]
+                  &amp;dependson='>
+                  [clone bug]
+                </a>
+                <script type="text/JavaScript">
+                  ajaxify('[% bug.id %]');
+                </script>
+              </span>
+            </span>
+            [% IF global.seen.$bugid %]
+              <b style='color: red;'>
+                <a title="Already displayed above; click to locate"
+                    onclick="duplicated('b[% bugid FILTER html %]')"
+                    href="#b[% bugid %]">
+                    (*)
+                </a>
+              </b>
+            </td>
+          </tr>
+        </table>
       </span>
-      [% IF global.seen.$bugid %]
-        <b style='color: red;'>
-          <a title="Already displayed above; click to locate"
-              onclick="duplicated('b[% bugid FILTER html %]')"
-              href="#b[% bugid %]">
-            (*)
-          </a>
-        </b>
       [% ELSE %]
-        </span>
+              </span>
+            </td>
+          </tr>
+        </table>
+      </span>
       <ul id='children_[% bug.id %]'>
         [% FOREACH depid = tree.dependencies.$bugid %]
           [% INCLUDE display_tree bugid=depid %]
@@ -177,7 +229,9 @@
 [% BLOCK bullet %]
   [% IF tree.dependencies.$bugid.size && ! global.seen.$bugid %]
     [% extra_class = " b_open" %]
-    [% extra_args = 'onclick="return doToggle(this, event);"' %]
+    [% extra_args = 'onclick="return doPreToggle(this, event);"' %]
+  [% ELSE %]
+    [% extra_class = " no_children" %]
   [% END %]
   <a name="b[% bugid %]" 
      class="b [%+ extra_class FILTER none %]"

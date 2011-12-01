@@ -30,15 +30,15 @@ ul.sortable, ul.sortable ul {
 }
 
 ul.sortable {
-    margin: 4em 0;
+    margin: 0;
 }
 .sortable li {
-    margin: 7px 0 0 0;
+    margin: 0;
     padding: 0;
 }
 
 .sortable li span {
-    padding: 3px;
+    padding: 0px;
     margin: 0;
     cursor: move;
     /*display: inline;*/
@@ -53,6 +53,15 @@ ul.sortable {
 
 ul.tree li {
     white-space: nowrap;
+    background: none;
+}
+
+ul.tree li a.b {
+    padding-bottom: 10px;
+}
+
+ul.tree li a.no_children { 
+    background: url("../bug-item.png") no-repeat;
 }
 
 span.hide {
