@@ -70,6 +70,10 @@ span.hide {
 span.show {
     display: inline;
 }
+
+.ui-icon {
+    cursor: default;
+}
  
 /*
 span.hov:hover {

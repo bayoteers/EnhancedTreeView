@@ -17,6 +17,7 @@
   #
   # Contributor(s):
   #   Eero Heino <eero.heino@nokia.com>
+  #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
 <link rel="stylesheet" href="extensions/EnhancedTreeView/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
@@ -29,9 +30,32 @@
         editable = 1 %]
 </script>
 
+<script id="SelectFieldTmpl" type="text/html">
+  <td id="<bug_id>_status_editable">
+    <select_field> 
+  </td>
+  <td id="<bug_id>_status_cancel_icon">
+    <div class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" 
+        onclick="checkIfEditedFieldChanged(false);">
+    </div>
+  </td>
+  <td id="<bug_id>_status_save_icon">
+    <div class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></div>
+  </td>
+</script>
+
 <script type="text/javascript">
 
-function getBugStatusHtml(bug_id, old_content)
+  // Id of that field, which is currently in editable state
+  var editedFieldid = "";
+  
+  // Value of field, which was assigned when field became to editable state
+  var originalValue = "";
+  
+  // Value (index) of select-element, which was selected when field became to editable state
+  var originalSelectedIndex = "";
+
+function getBugEditableStatusHtml(bug_id, old_content)
 {
     var bug_status_field = $("#bug_status_field_html").html();
 
@@ -48,10 +72,176 @@ function getBugStatusHtml(bug_id, old_content)
     template = template.replace(/<field_name>/g, 'bug_status');
     template = template.replace(/<bug_id>/g, bug_id);
     template = template.replace('<select_field>', bug_status_field);
-    template = template.replace('<old_content>', old_content);
     return template;
 }
 
+function getBugStatusHtml(bug_id, current_value)
+{
+    var truncated_value = current_value.substr(0, 4);
+    var bug_status_html = 
+        '<td id="' + bug_id + '_status_static" title="' + current_value + '" ondblclick="makeeditable(\'' + bug_id + '_status\');">';
+    bug_status_html += truncated_value;
+    bug_status_html += '</td>';
+    return bug_status_html;
+}
+
+  /**
+   * Function checks whether edited field has been changed from original value.
+   * If value has changed, field is tried to be saved. Edited field is made hidden
+   * static field is made visible. Static field is changed into same value, that is saved, 
+   * or original value, if saving is not done.
+   *
+   * Editable fields of types 'input' and 'select' are handled separately.
+   */
+  
+  function checkIfEditedFieldChanged(mustsave, mustask) {
+//    var editField = getInputElementByParentId(editedFieldid + "_editable");
+    var newValue = "";
+  
+    var bugId = editedFieldid.match(/^\d{1,6}/);
+    var fieldName = editedFieldid.substr(bugId[0].length + 1);
+  
+//    if (editField) {
+//      // Input element was searched and if it was found, edited field is text-input-type
+//      newValue = editField.value;
+//
+//      // If value is not saved (or it has not changed), original value is restored
+//      if (newValue != originalValue) {
+//        if (decidetosave(editedFieldid, fieldName, mustsave, mustask)) {
+//          save(editedFieldid, newValue);
+//          makeInputStatic(editedFieldid, newValue);
+//        } else {
+//          makeInputStatic(editedFieldid, originalValue);
+//        }
+//      } else {
+//        makeInputStatic(editedFieldid, originalValue);
+//      }
+//    } else {
+      // Else edited field is selection-element. Selection-element be handled separately.
+      editableEl = document.getElementById(editedFieldid + "_editable");
+      var selectEl = editableEl.getElementsByTagName("select")[0];
+      var selectedIndex = selectEl.selectedIndex;
+
+      if (originalSelectedIndex != selectedIndex) {
+        // If value is not saved (or it has not changed), original value is restored
+        newValue = selectEl.options[selectedIndex].value;
+        if (decidetosave(editedFieldid, fieldName, mustsave, mustask)) {
+          save(editedFieldid, newValue);
+  
+          makeSelectStatic(editedFieldid, selectEl.value, fieldName);
+        } else {
+          makeSelectStatic(editedFieldid, originalValue, fieldName);
+        }
+      } else {
+        makeSelectStatic(editedFieldid, originalValue, fieldName);
+      }
+//    }
+  
+    editedFieldid = "";
+    originalValue = "";
+  }
+
+  /**
+   * Function makes static field visible and makes editable field hidden,
+   * when editable field is type 'select'.
+   */
+  function makeSelectStatic(fieldid, currentValue, fieldName) {
+    var editableId = fieldid + "_editable";
+    var cancelId   = fieldid + "_cancel_icon";
+    var saveId     = fieldid + "_save_icon";
+    var bugId = fieldid.match(/^\d{1,6}/);
+    var newHtml = getBugStatusHtml(bugId, currentValue);
+    $('#' + cancelId).remove();
+    $('#' + saveId).remove();
+    $('#' + editableId).replaceWith(newHtml);
+  }
+  
+
+  /**
+   * Function makes static field hidden and editable field visible.
+   * Value of edited field is stored so that it can be used when changed value is later saved.
+   * While changing the state of one field to editable, id of that field is stored.
+   *
+   * Static and editable elements are TR-elements. Static element contains static text.
+   * Editable TR-element contains element, which is either text-input or select.
+   *
+   * Editable fields of types 'input' and 'select' are handled separately.
+   */
+  
+  function makeeditable(fieldid) {
+    var status = false;
+  
+    var staticId = fieldid + "_static";
+    var editableId = fieldid + "_editable";
+    var staticEl = document.getElementById(staticId);
+
+    var bugId = fieldid.match(/^\d{1,6}/);
+
+    var old_content = staticEl.innerHTML;
+    var editableHtml = getBugEditableStatusHtml(bugId, old_content);
+  
+    if (editedFieldid != "" && editedFieldid != fieldid) {
+      status = checkIfEditedFieldChanged(true /* must save */ , true /* must ask first */ );
+    }
+
+    editedFieldid = fieldid;
+    // HTML-content is changed
+    var textVal = staticEl.title;
+    $(staticEl).replaceWith(editableHtml);
+  
+//    var allInputs = editableEl.getElementsByTagName("input");
+//
+//    if (allInputs.length > 0) {
+//      // Input element was searched and if it was found, edited field is text-input-type
+//      originalValue = allInputs[0].value;
+//    } else {
+//      // Else edited field is select-element. Select-element is handled separately.
+//      var spanEl = staticEl.getElementsByTagName("span")[0];
+//      // Title of element equals actual value in every field except assigned_to-field
+//
+//      var textVal = spanEl.title;
+
+      var selectEl = document.getElementById(editableId).getElementsByTagName("select")[0];
+      var allOptions = selectEl.options;
+      var selectedIndex = 0;
+      var i = 0;
+      for (i = 0; i < allOptions.length; i++) {
+        if (allOptions[i].value == textVal) {
+          selectedIndex = i;
+          break;
+        }
+      }
+      var selectedItem = selectEl.options[selectedIndex];
+      originalSelectedIndex = selectedIndex;
+      originalValue = selectedItem.value;
+      selectEl.value = selectedItem.value; 
+  }
+
+  /**
+   * Function solves whether changed value of field will be saved or not.
+   */
+  
+  function decidetosave(fieldid, fieldName, mustsave, mustask) {
+    var decission = false;
+  
+    // If mustsave is false, this function does nothing, but this is really for clarity of code.
+    if (mustsave) {
+      if (mustask) {
+        if (confirm("Do you want to save changes in " + fieldName)) {
+          decission = true;
+        } else {
+          decission = false;
+        }
+      } else {
+        decission = true;
+      }
+    } else {
+      decission = false;
+    }
+    return decission;
+  }
+
+  function save(fieldid, newValue, mustask) {  }
 </script>
 
   [% FOREACH b_data IN bugs_data %]
@@ -96,21 +286,10 @@ function getBugStatusHtml(bug_id, old_content)
                   <b>[%- bugid %]:</b>
                 </a>
               </td>
-              <td>
-                [% PROCESS "bug/field.html.tmpl"
-                    bug = bug, field = status_field,
-                    no_tds = 1, value = 0,
-                    editable = 1 %]
-	      </td>
-	      <td>
-	        <div class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" 
-                    onclick="checkIfEditedFieldChanged(false);">
-                </div>
-	      </td>
-	      <td>
-	        <div class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></div>
-	      </td>
-              <td>
+              <td id="[% bug.id %]_status_static" title="[% bug.status.name %]" ondblclick="makeeditable('[% bug.id %]_status');">
+	        [% bug.status.name.truncate(4) %]
+              </td>
+             <td>
                 &nbsp;
                 <a href="" onclick="return false;">
                   [% bug.assigned_to.login FILTER email FILTER html %]
