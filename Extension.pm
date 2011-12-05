@@ -25,6 +25,7 @@ use base qw(Bugzilla::Extension);
 
 # This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
 use Bugzilla::Extension::EnhancedTreeView::Util;
+use Bugzilla::Extension::EnhancedTreeView::BugRPCLib;
 
 our $VERSION = '0.03';
 
@@ -91,11 +92,22 @@ sub page_before_template {
         show_tree_view($vars, $VERSION);
     }
     if ($page eq 'EnhancedTreeView_ajax.html') {
-        ajax_tree_view($vars, $VERSION);
+        my $cgi    = Bugzilla->cgi;
+        my $schema = $cgi->param('schema');
+        if ($schema eq "bug") {
+            update_bug_fields_from_json($vars);
+        }
+        else {
+            ajax_tree_view($vars, $VERSION);
+        }
     }
     #if ($page eq 'EnhancedTreeView_create_bug.html')
     if ($page eq 'EnhancedTreeView_display_tree.html') {
         ajax_create_bug($vars);
+    }
+
+    if ($page eq "InlineEditor/ajax.html") {
+
     }
 
 }

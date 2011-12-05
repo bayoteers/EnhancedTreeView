@@ -31,15 +31,15 @@
 </script>
 
 <script id="SelectFieldTmpl" type="text/html">
-  <td id="<bug_id>_status_editable">
+  <td id="<bug_id>_bug_status_editable">
     <select_field> 
   </td>
-  <td id="<bug_id>_status_cancel_icon">
+  <td id="<bug_id>_bug_status_cancel_icon">
     <div class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" 
         onclick="checkIfEditedFieldChanged(false);">
     </div>
   </td>
-  <td id="<bug_id>_status_save_icon">
+  <td id="<bug_id>_bug_status_save_icon">
     <div class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></div>
   </td>
 </script>
@@ -79,7 +79,7 @@ function getBugStatusHtml(bug_id, current_value)
 {
     var truncated_value = current_value.substr(0, 4);
     var bug_status_html = 
-        '<td id="' + bug_id + '_status_static" title="' + current_value + '" ondblclick="makeeditable(\'' + bug_id + '_status\');">';
+        '<td id="' + bug_id + '_bug_status_static" title="' + current_value + '" ondblclick="makeeditable(\'' + bug_id + '_bug_status\');">';
     bug_status_html += truncated_value;
     bug_status_html += '</td>';
     return bug_status_html;
@@ -125,10 +125,20 @@ function getBugStatusHtml(bug_id, current_value)
       if (originalSelectedIndex != selectedIndex) {
         // If value is not saved (or it has not changed), original value is restored
         newValue = selectEl.options[selectedIndex].value;
+        var oldValue = selectEl.options[originalSelectedIndex].value;
         if (decidetosave(editedFieldid, fieldName, mustsave, mustask)) {
-          save(editedFieldid, newValue);
-  
-          makeSelectStatic(editedFieldid, selectEl.value, fieldName);
+          var notice = "You have to specify a comment when changing the status of a bug from " + oldValue + " to " + newValue;
+          var comment = ""
+          while(comment == "") {
+              comment = prompt(notice);
+          }
+          if(comment == null) {
+              makeSelectStatic(editedFieldid, originalValue, fieldName);
+          }
+          else {
+              save(editedFieldid, newValue, comment);
+              makeSelectStatic(editedFieldid, selectEl.value, fieldName);
+          }
         } else {
           makeSelectStatic(editedFieldid, originalValue, fieldName);
         }
@@ -241,7 +251,69 @@ function getBugStatusHtml(bug_id, current_value)
     return decission;
   }
 
-  function save(fieldid, newValue, mustask) {  }
+  /**
+   * Function saves value.
+   */
+  
+  function save(fieldid, newValue, comment) {
+    var bugId = fieldid.match(/^\d{1,6}/);
+    var fieldName = fieldid.substr(bugId[0].length + 1);
+  
+    synchronous_saveBugField(bugId[0], fieldName, newValue, comment);
+  }
+  
+  /**
+   * Function is call-back function, that is called after succesfull ajax call returns.
+   * Ajax call if succesfull, if server responds without throwing exception. Ordered
+   * errors are shown in error message. Function shows status of saving to user.
+   */
+  
+  function saveResponse(response, status, xhr) {
+    var retObj = eval("(" + response + ")");
+
+    if (retObj.errors) {
+      alert("There are errors: " + retObj.errormsg);
+    } else {
+      alert("Success");
+    }
+  }
+  
+  /**
+   * Function saves value of one bug field into database by doing ajax-call.
+   */
+  
+  function saveBugField(bugId, fieldName, newValue) {
+    var json_params = '{ "method": "Bug.update", "params": {"ids" : [ {"' + bugId + '": { "' + fieldName + '": "' + newValue + '"} } ] }, "id" : 0 }';
+  
+    $.post('page.cgi?id=EnhancedTreeView_ajax.html', {
+      schema: 'bug',
+      action: 'update',
+      data: json_params
+    }, saveResponse, 'text');
+  }
+  
+  /* Synchronous call for debugging */
+  
+  function synchronous_saveBugField(bugId, fieldName, newValue, comment) {
+    var json_params = "";
+    if(comment && comment != "") {
+        json_params = '{ "method": "Bug.update", "params": {"ids" : [ {"' + bugId + '": { "' + fieldName + '": "' + newValue + '", "comment": "' + comment + '"} } ] }, "id" : 0 }';
+    }
+    else {
+        json_params = '{ "method": "Bug.update", "params": {"ids" : [ {"' + bugId + '": { "' + fieldName + '": "' + newValue + '"} } ] }, "id" : 0 }';  
+    }
+    $.ajax({
+      async: false,
+      url: 'page.cgi?id=EnhancedTreeView_ajax.html',
+      data: {
+        schema: 'bug',
+        action: 'update',
+        data: json_params
+      },
+      success: saveResponse
+    });
+  }
+
 </script>
 
   [% FOREACH b_data IN bugs_data %]
@@ -286,8 +358,8 @@ function getBugStatusHtml(bug_id, current_value)
                   <b>[%- bugid %]:</b>
                 </a>
               </td>
-              <td id="[% bug.id %]_status_static" title="[% bug.status.name %]" ondblclick="makeeditable('[% bug.id %]_status');">
-	        [% bug.status.name.truncate(4) %]
+              <td id="[% bug.id %]_bug_status_static" title="[% bug.status.name %]" ondblclick="makeeditable('[% bug.id %]_bug_status');">
+                [% bug.status.name.truncate(4) %]
               </td>
              <td>
                 &nbsp;
