@@ -29,6 +29,8 @@
   // Value (index) of select-element, which was selected when field became to editable state
   var originalSelectedIndex = "";
 
+  var comment_required = 1;
+
 function getBugEditableStatusHtml(bug_id, old_content)
 {
     var bug_status_field = $("#bug_status_field_html").html();
@@ -143,12 +145,23 @@ function getAssignedToHtml(bug_id, current_value)
         newValue = selectEl.options[selectedIndex].value;
         var oldValue = selectEl.options[originalSelectedIndex].value;
         if (decidetosave(editedFieldid, fieldName, mustsave, mustask)) {
-          var notice = "You have to specify a comment when changing the status of a bug from " + oldValue + " to " + newValue;
-          var comment = ""
-          while(comment == "") {
+          var comment = "";
+          var cancelled = 0;
+          if(comment_required) {
+              var notice = "You have to specify a comment when changing the status of a bug from " + oldValue + " to " + newValue;
+              while(comment == "") {
+                  comment = prompt(notice);
+              }
+              if(comment == null) {
+                  cancelled = 1;
+              }
+          }
+          else {
+              var notice = "Do you want to give a comment while changing the status of a bug?";
               comment = prompt(notice);
           }
-          if(comment == null) {
+
+          if(cancelled) {
               makeSelectStatic(editedFieldid, originalValue);
           }
           else {
@@ -245,6 +258,7 @@ function getAssignedToHtml(bug_id, current_value)
       originalSelectedIndex = selectedIndex;
       originalValue = selectedItem.value;
       selectEl.value = selectedItem.value; 
+      $(selectEl).change(function() { check_status_value(bugId, this.value); });
   }
 
   function placeAssignedToInput(staticEl, bugId, fieldid, textVal) {
@@ -274,6 +288,29 @@ function getAssignedToHtml(bug_id, current_value)
       decission = false;
     }
     return decission;
+  }
+
+  function check_status_value(item_id, new_value) {
+    $.ajax({
+      async: false,
+      url: 'page.cgi?id=EnhancedTreeView_ajax.html',
+      data: {
+        schema: 'check_bug_status',
+        status: new_value,
+        bugid: '' + item_id,
+      },
+      success: checkResponse
+    }); 
+  }
+
+  function checkResponse(response, status, xhr) {
+    var retObj = eval("(" + response + ")");
+
+    if (retObj.errors) {
+      alert("" + retObj.errormsg);
+    } else {
+      comment_required = retObj.ret_value;
+    }
   }
 
   /**

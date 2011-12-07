@@ -94,7 +94,10 @@ sub page_before_template {
     if ($page eq 'EnhancedTreeView_ajax.html') {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
-        if ($schema eq "bug") {
+        if ($schema eq "check_bug_status") {
+            check_bug_status($vars);
+        }
+        elsif ($schema eq "bug") {
             update_bug_fields_from_json($vars);
         }
         else {

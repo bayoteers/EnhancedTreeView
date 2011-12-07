@@ -33,6 +33,7 @@ use base qw(Exporter);
 
 our @EXPORT = qw(
   update_bug_fields_from_json
+  check_bug_status
   );
 #
 # Important!
@@ -119,6 +120,32 @@ sub update_bug_field {
     }
     else {
         $vars->{errors} = "Not able to save column " . $field_name;
+    }
+}
+
+sub check_bug_status {
+    my ($vars) = @_;
+
+    my $cgi    = Bugzilla->cgi;
+    my $bug_id = $cgi->param('bugid');
+    my $status = $cgi->param('status');
+
+    my $bug              = Bugzilla::Bug->new($bug_id);
+    my $old_status       = $bug->status();
+    my $available_states = $old_status->can_change_to();
+    my $enabled          = 0;
+    my $comment_required = 0;
+    for my $available (@{$available_states}) {
+        if ($available->name() eq $status) {
+            $enabled          = 1;
+            $comment_required = $available->comment_required_on_change_from($old_status);
+        }
+    }
+    if ($enabled) {
+        $vars->{ret_value} = "" . $comment_required;
+    }
+    else {
+        $vars->{errors} = "Not able to change status from " . $old_status->name() . " to " . $status;
     }
 }
 
