@@ -66,12 +66,12 @@ sub update_bug_fields_from_json {
         my $bug_id          = $this_bug_id[0];
         my $bug_fields      = $bug_obj->{$bug_id};
         my @bug_field_names = keys %{$bug_fields};
-        
+
         my $comment_value = undef;
-        if(grep { $_ eq "comment" } @bug_field_names) {
+        if (grep { $_ eq "comment" } @bug_field_names) {
             $comment_value = $bug_fields->{"comment"};
         }
-        my @bug_field_names  = grep { $_ ne "comment" } @bug_field_names;
+        my @bug_field_names = grep { $_ ne "comment" } @bug_field_names;
 
         my $field_name = @bug_field_names[0];
         $field_value = $bug_fields->{$field_name};
@@ -111,7 +111,7 @@ sub update_bug_field {
         $bug->update();
     }
     elsif ($field_name eq 'bug_status') {
-        if($comment_value) {
+        if ($comment_value) {
             $bug->add_comment($comment_value, {});
         }
         $bug->set_status($field_value);

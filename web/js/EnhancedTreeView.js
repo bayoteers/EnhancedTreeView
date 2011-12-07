@@ -17,7 +17,6 @@
   
    Contributor(s):
      Eero Heino <eero.heino@nokia.com>
-     Visa Korhonen <visa.korhonen@symbio.com>
   */
 
 /**
