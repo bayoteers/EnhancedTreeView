@@ -25,6 +25,7 @@ use base qw(Bugzilla::Extension);
 
 # This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
 use Bugzilla::Extension::EnhancedTreeView::Util;
+use Bugzilla::Error;
 
 our $VERSION = '0.03';
 
@@ -88,6 +89,7 @@ sub page_before_template {
     $vars->{'user'} = Bugzilla->user;
 
     if ($page eq 'EnhancedTreeView.html') {
+        _check_access_right(Bugzilla->user);
         show_tree_view($vars, $VERSION);
     }
     if ($page eq 'EnhancedTreeView_ajax.html') {
@@ -107,4 +109,24 @@ sub template_before_process {
     $vars->{treeviewurl} = "page.cgi?id=EnhancedTreeView.html";
 }
 
+sub _check_access_right {
+    my ($user) = @_;
+
+    my $has_access = 0;
+    my $named_group = "";
+    my $access_groups = Bugzilla->params->{'enhancedtreeview_access_groups'};
+    for my $et_group (@{$access_groups}) {
+        if ($user->in_group($et_group)) {
+            $has_access = 1;
+        }
+        if ($named_group ne "") {
+            $named_group .= ", ";
+        }
+        $named_group .= $et_group;
+    }
+
+    if (not $has_access) {
+        ThrowUserError('auth_failure', { group => $named_group, action => "access", object => "enhancedtree" });
+    }
+}
 __PACKAGE__->NAME;

@@ -4,15 +4,29 @@
 <script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
 <script type="text/javascript">
 function changeurl() {
+
+[% has_access = 0 %]
+[% access_groups = Param('enhancedtreeview_access_groups') %]
+[% FOREACH et_group IN access_groups %]
+  [% IF (user.in_group(et_group)) %]
+    [% has_access = 1 %]
+  [% END %]
+[% END %]
+[% IF NOT has_access %]
+    return; // User does not have access rights to enhanced tree view
+[% END %]
+
     var td = document.getElementById('show_dependency_tree_or_graph');
     if(!td) {
         return;
     }
     var anch_array = td.getElementsByTagName("a");
     if(anch_array) {
-        var url = anch_array[0].href;
-        url = url.replace('showdependencytree.cgi?id=', 'page.cgi?id=EnhancedTreeView.html&bug_id=');
-        anch_array[0].href = url;
+        var treeAnchor = anch_array[0];
+        var treeUrl = treeAnchor.href;
+        enTreeUrl = treeUrl.replace('showdependencytree.cgi?id=', 'page.cgi?id=EnhancedTreeView.html&bug_id=');
+        enTreeHtml = '&nbsp;/&nbsp;<a href="' + enTreeUrl + '">enhanced tree</a>';
+        $(treeAnchor).after(enTreeHtml);
     }
 }
 
