@@ -308,9 +308,16 @@ function getAssignedToHtml(bug_id, current_value)
 
     if (retObj.errors) {
       alert("" + retObj.errormsg);
+      resetStatusSelectToOriginalValue();
     } else {
       comment_required = retObj.ret_value;
     }
+  }
+
+  function resetStatusSelectToOriginalValue() {
+      editableEl = document.getElementById(editedFieldid + "_editable");
+      var selectEl = editableEl.getElementsByTagName("select")[0];
+      selectEl.selectedIndex = originalSelectedIndex;
   }
 
   /**
