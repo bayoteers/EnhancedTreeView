@@ -112,8 +112,8 @@ sub template_before_process {
 sub _check_access_right {
     my ($user) = @_;
 
-    my $has_access = 0;
-    my $named_group = "";
+    my $has_access    = 0;
+    my $named_group   = "";
     my $access_groups = Bugzilla->params->{'enhancedtreeview_access_groups'};
     for my $et_group (@{$access_groups}) {
         if ($user->in_group($et_group)) {
