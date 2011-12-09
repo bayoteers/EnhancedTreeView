@@ -29,33 +29,33 @@ sub get_param_list {
     my ($class) = @_;
 
     my @param_list = (
-        {
-           name    => 'enhancedtreeview_inherited_attributes',
-           desc    => 'Create bug: inherited options from the depends on bug',
-           type    => 'm',
-           choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
-           default => []
-        },
-        {
-           name    => 'enhancedtreeview_use_scrums_extension',
-           desc    => 'Use Scrums extension for creation of bugs to put them to the parents sprint',
-           type    => 'b',
-           default => 0
-        },
-        {
-           name    => 'enhancedtreeview_mail_notifications',
-           desc    => 'Send email notifications about dependency changes to users',
-           type    => 'b',
-           default => 1
-        },
-        {
-           name    => 'enhancedtreeview_access_groups',
-           desc    => 'Groups that are allowed to use EnhancedTreeView.',
-           type    => 'm',
-           choices => \&_get_all_group_names,
-           default => ['admin'],
-        },
-    );
+                      {
+                         name    => 'enhancedtreeview_inherited_attributes',
+                         desc    => 'Create bug: inherited options from the depends on bug',
+                         type    => 'm',
+                         choices => [ 'assigned_to', 'bug_severity', 'rep_platform' ],
+                         default => []
+                      },
+                      {
+                         name    => 'enhancedtreeview_use_scrums_extension',
+                         desc    => 'Use Scrums extension for creation of bugs to put them to the parents sprint',
+                         type    => 'b',
+                         default => 0
+                      },
+                      {
+                         name    => 'enhancedtreeview_mail_notifications',
+                         desc    => 'Send email notifications about dependency changes to users',
+                         type    => 'b',
+                         default => 1
+                      },
+                      {
+                         name    => 'enhancedtreeview_access_groups',
+                         desc    => 'Groups that are allowed to use EnhancedTreeView.',
+                         type    => 'm',
+                         choices => \&_get_all_group_names,
+                         default => ['admin'],
+                      },
+                     );
     return @param_list;
 }
 
