@@ -56,6 +56,10 @@ ul.tree li {
     background: none;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 ul.tree li a.b {
     padding-bottom: 10px;
 }

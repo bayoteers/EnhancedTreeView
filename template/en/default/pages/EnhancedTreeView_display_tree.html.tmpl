@@ -70,15 +70,15 @@
     <span>
       <table>
         <tr>
-          <td>
+          <td class="clickable">
             [% IF isroot %]
               <img src="extensions/EnhancedTreeView/web/blanco.png"/>
             [% ELSE %]
               [% info_on_dependson = blocked_info.$bugid %]
               [% IF info_on_dependson && info_on_dependson.$parentid %]
-                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% info_on_dependson.$parentid %]" onclick="alert('pam');"/>
+                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% info_on_dependson.$parentid %]"/>
               [% ELSE %]
-                <img src="extensions/EnhancedTreeView/web/empty_dep.png" onclick="alert('pam');"/>
+                <img src="extensions/EnhancedTreeView/web/empty_dep.png"/>
               [% END %]
             [% END %]
           </td>
