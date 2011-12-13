@@ -23,6 +23,7 @@ package Bugzilla::Extension::EnhancedTreeView::Util;
 use strict;
 use base qw(Exporter);
 
+use Bugzilla::Extension::EnhancedTreeView::DependencyHandle;
 use List::Util qw(max);
 use JSON;
 use Storable qw(dclone);
@@ -121,6 +122,11 @@ sub get_bug_data {
     }
     $bug_data{'blocked_tree'} = $blocked_tree;
     $bug_data{'blocked_ids'}  = [ keys(%$blocked_ids) ];
+
+    my $tree_blocked_info = {};
+
+    get_blocked_info($tree_blocked_info, $dependson_ids);
+    $bug_data{'blocked_info'} = $tree_blocked_info;
 
     $bug_data{'bugid'}         = $id;
     $bug_data{'maxdepth'}      = $maxdepth;

@@ -49,13 +49,14 @@
     [% dependson_tree=b_data.dependson_tree %]
     [% blocked_tree=b_data.blocked_tree %]
     [% blocked_ids=b_data.blocked_ids %]
+    [% blocked_info=b_data.blocked_info %]
     [% realdepth=b_data.realdepth %]
     [% bugid=b_data.bugid %]
     [% maxdepth=b_data.maxdepth %]
     [% hide_resolved=b_data.hide_resolved %]
 
     [% tree_name = "dependson_tree" %]
-    [% INCLUDE display_tree tree=dependson_tree %]
+    [% INCLUDE display_tree tree=dependson_tree isroot=1 %]
   [% END %]
 
 
@@ -70,8 +71,21 @@
       <table>
         <tr>
           <td>
+            [% IF isroot %]
+              <img src="extensions/EnhancedTreeView/web/blanco.png"/>
+            [% ELSE %]
+              [% info_on_dependson = blocked_info.$bugid %]
+              [% IF info_on_dependson && info_on_dependson.$parentid %]
+                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% info_on_dependson.$parentid %]" onclick="alert('pam');"/>
+              [% ELSE %]
+                <img src="extensions/EnhancedTreeView/web/empty_dep.png" onclick="alert('pam');"/>
+              [% END %]
+            [% END %]
+          </td>
 
-            [%- INCLUDE bullet bugid=bugid tree=tree -%]
+          <td>
+
+            [%- INCLUDE bullet bugid=bugid tree=tree isroot=isroot -%]
             <span class="summ[% "_deep" IF tree.dependencies.$bugid.size %]" 
                 id="b[% bugid FILTER html %]" 
                 [% IF global.seen.$bugid %]
@@ -90,9 +104,7 @@
               </td>
              <td id="[% bug.id %]_assigned_to_static" title="[% bug.assigned_to.login %]" ondblclick="makeeditable('[% bug.id %]_assigned_to');">
                 &nbsp;
-<!--                <a href="" onclick="return false;"> -->
                   [% bug.assigned_to.login FILTER email FILTER html %]
-<!--                </a> -->
              </td>
              <td>
                 [% IF isclosed %]
@@ -198,7 +210,7 @@
       </span>
       <ul id='children_[% bug.id %]'>
         [% FOREACH depid = tree.dependencies.$bugid %]
-          [% INCLUDE display_tree bugid=depid %]
+          [% INCLUDE display_tree parentid=bugid bugid=depid isroot=0 %]
         [% END %]
       </ul>
     [% END %]

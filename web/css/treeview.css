@@ -60,8 +60,16 @@ ul.tree li a.b {
     padding-bottom: 10px;
 }
 
+ul.tree li a.b_open {
+    background: url("../../../../skins/standard/dependency-tree/tree-open.png") no-repeat;
+}
+
+ul.tree li a.b_closed {
+    background: url("../../../../skins/standard/dependency-tree/tree-closed.png") no-repeat;
+}
+
 ul.tree li a.no_children { 
-    background: url("../bug-item.png") no-repeat;
+    background: url("../../../../skins/standard/dependency-tree/bug-item.png") no-repeat;
 }
 
 span.hide {
