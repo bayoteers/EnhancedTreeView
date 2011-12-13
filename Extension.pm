@@ -80,6 +80,42 @@ sub enter_bug_url_fields_cloned {
     }
 }
 
+sub db_schema_abstract_schema {
+    my ($self, $args) = @_;
+
+    my $schema = $args->{schema};
+    $schema->{'entreeview_dependency_info'} = {
+                                                FIELDS => [
+                                                            blocked => {
+                                                                         TYPE       => 'INT3',
+                                                                         NOTNULL    => 1,
+                                                                         REFERENCES => {
+                                                                                         TABLE  => 'bugs',
+                                                                                         COLUMN => 'bug_id',
+                                                                                         DELETE => 'CASCADE'
+                                                                                       }
+                                                                       },
+                                                            dependson => {
+                                                                           TYPE       => 'INT3',
+                                                                           NOTNULL    => 1,
+                                                                           REFERENCES => {
+                                                                                           TABLE  => 'bugs',
+                                                                                           COLUMN => 'bug_id',
+                                                                                           DELETE => 'CASCADE'
+                                                                                         }
+                                                                         },
+                                                            dep_type    => { TYPE => 'INT2' },
+                                                            description => { TYPE => 'varchar(127)' },
+                                                          ],
+                                                INDEXES => [
+                                                             entreeview_dependency_info_unique_idx => {
+                                                                                                        FIELDS => [qw(blocked dependson)],
+                                                                                                        TYPE   => 'UNIQUE'
+                                                                                                      },
+                                                           ],
+                                              };
+}
+
 sub page_before_template {
     my ($self, $args) = @_;
 
@@ -107,10 +143,6 @@ sub page_before_template {
     #if ($page eq 'EnhancedTreeView_create_bug.html')
     if ($page eq 'EnhancedTreeView_display_tree.html') {
         ajax_create_bug($vars);
-    }
-
-    if ($page eq "InlineEditor/ajax.html") {
-
     }
 
 }
