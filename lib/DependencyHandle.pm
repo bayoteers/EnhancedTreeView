@@ -40,11 +40,11 @@ sub handle_removed_dependency {
 sub get_blocked_info {
     my ($tree_blocked_info, $dep_ids) = @_;
 
-    my $dbh = Bugzilla->dbh;           
-    my @ids = keys %{$dep_ids};
+    my $dbh    = Bugzilla->dbh;
+    my @ids    = keys %{$dep_ids};
     my $id_str = "";
     for my $id (@ids) {
-        if($id_str ne "") {
+        if ($id_str ne "") {
             $id_str .= ", ";
         }
         $id_str .= "$id";
@@ -57,7 +57,8 @@ sub get_blocked_info {
         from 
             entreeview_dependency_info 
         where 
-            dependson in (?)');
+            dependson in (?)'
+                           );
     $sth->execute($id_str);
     my ($blocked, $dependson, $description);
     while (($blocked, $dependson, $description) = $sth->fetchrow_array) {
