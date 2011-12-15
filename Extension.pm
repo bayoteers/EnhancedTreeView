@@ -26,6 +26,7 @@ use base qw(Bugzilla::Extension);
 # This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
 use Bugzilla::Extension::EnhancedTreeView::Util;
 use Bugzilla::Extension::EnhancedTreeView::BugRPCLib;
+use Bugzilla::Extension::EnhancedTreeView::DependencyHandle;
 
 our $VERSION = '0.03';
 
@@ -135,6 +136,9 @@ sub page_before_template {
         }
         elsif ($schema eq "bug") {
             update_bug_fields_from_json($vars);
+        }
+        elsif ($schema eq "depinfo") {
+            update_dependency_info($vars);
         }
         else {
             ajax_tree_view($vars, $VERSION);

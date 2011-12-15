@@ -25,7 +25,8 @@ use base qw(Exporter);
 
 our @EXPORT = qw(
   handle_removed_dependency
-  get_blocked_info
+  get_dependency_info
+  update_dependency_info
   );
 
 sub handle_removed_dependency {
@@ -37,11 +38,16 @@ sub handle_removed_dependency {
     #    $vars->{'json_text'} = 'hello';
 }
 
-sub get_blocked_info {
-    my ($tree_blocked_info, $dep_ids) = @_;
+sub get_dependency_info {
+    my ($tree_dependency_info, $dep_ids) = @_;
 
     my $dbh    = Bugzilla->dbh;
     my @ids    = keys %{$dep_ids};
+
+    if(scalar @ids == 0) {
+        return;
+    }
+
     my $id_str = "";
     for my $id (@ids) {
         if ($id_str ne "") {
@@ -49,7 +55,7 @@ sub get_blocked_info {
         }
         $id_str .= "$id";
     }
-    my $sth = $dbh->prepare(
+    my $query_str =
         'select 
             blocked,
             dependson,
@@ -57,15 +63,49 @@ sub get_blocked_info {
         from 
             entreeview_dependency_info 
         where 
-            dependson in (?)'
-                           );
-    $sth->execute($id_str);
+            dependson in (' . $id_str . ')';
+    my $sth = $dbh->prepare($query_str);
+    $sth->execute();
     my ($blocked, $dependson, $description);
-    while (($blocked, $dependson, $description) = $sth->fetchrow_array) {
-        if (!$tree_blocked_info->{$dependson}) {
-            $tree_blocked_info->{$dependson} = {};
+
+    while (($blocked, $dependson, $description) = $sth->fetchrow_array()) {
+        if (!$tree_dependency_info->{$dependson}) {
+            $tree_dependency_info->{$dependson} = {};
         }
-        $tree_blocked_info->{$dependson}->{$blocked} = $description;
+        $tree_dependency_info->{$dependson}->{$blocked} = $description;
+    }
+}
+
+sub update_dependency_info {
+    my ($vars) = @_;
+
+    my $cgi  = Bugzilla->cgi;
+    my $dbh  = Bugzilla->dbh;
+    my $json = new JSON::XS;
+
+    my $dependency_data = $cgi->param('data');
+
+    if ($dependency_data =~ /(.*)/) {
+        $dependency_data = $1;    # $data now untainted
+    }
+    my $content     = $json->allow_nonref->utf8->relaxed->decode($dependency_data);
+    my $params      = $content->{params};
+    my $description = $params->{description};
+    my $blocked     = $params->{blocked};
+    my $dependson   = $params->{dependson};
+
+    my $sth = $dbh->prepare('select blocked from entreeview_dependency_info where blocked = ? and dependson = ?');
+    $sth->execute($blocked, $dependson);
+    if($sth->fetchrow_array()) {
+        if ($description eq "") {
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);    
+        }
+        else {
+            $dbh->do('UPDATE entreeview_dependency_info SET description = ? WHERE blocked = ? AND dependson = ?', undef, $description, $blocked, $dependson);
+        }
+    }
+    else {
+        $dbh->do('INSERT INTO entreeview_dependency_info (description, blocked, dependson) values (?, ?, ?)', undef, $description, $blocked, $dependson);
     }
 }
 

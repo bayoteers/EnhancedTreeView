@@ -49,7 +49,7 @@
     [% dependson_tree=b_data.dependson_tree %]
     [% blocked_tree=b_data.blocked_tree %]
     [% blocked_ids=b_data.blocked_ids %]
-    [% blocked_info=b_data.blocked_info %]
+    [% dependency_info=b_data.dependency_info %]
     [% realdepth=b_data.realdepth %]
     [% bugid=b_data.bugid %]
     [% maxdepth=b_data.maxdepth %]
@@ -70,13 +70,18 @@
     <span>
       <table>
         <tr>
-          <td class="clickable">
+          [% info_on_dependson = dependency_info.$bugid %]
+          [% IF info_on_dependson && info_on_dependson.$parentid %]
+            [% description_value = info_on_dependson.$parentid %]
+          [% ELSE %]
+            [% description_value = "" %]
+          [% END %]
+<td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]' )" onmouseover="description_icon = true;" onmouseout="description_icon = false;">
             [% IF isroot %]
               <img src="extensions/EnhancedTreeView/web/blanco.png"/>
             [% ELSE %]
-              [% info_on_dependson = blocked_info.$bugid %]
-              [% IF info_on_dependson && info_on_dependson.$parentid %]
-                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% info_on_dependson.$parentid %]"/>
+              [% IF description_value %]
+                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% description_value %]"/>
               [% ELSE %]
                 <img src="extensions/EnhancedTreeView/web/empty_dep.png"/>
               [% END %]
