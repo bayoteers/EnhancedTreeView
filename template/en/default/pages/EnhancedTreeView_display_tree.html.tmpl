@@ -108,7 +108,6 @@
                 [% bug.status.name.truncate(4) %]
               </td>
              <td id="[% bug.id %]_assigned_to_static" title="[% bug.assigned_to.login %]" ondblclick="makeeditable('[% bug.id %]_assigned_to');">
-                &nbsp;
                   [% bug.assigned_to.login FILTER email FILTER html %]
              </td>
              <td>

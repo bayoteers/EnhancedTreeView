@@ -263,6 +263,9 @@ function getAssignedToHtml(bug_id, current_value)
 
   function placeAssignedToInput(staticEl, bugId, fieldid, textVal) {
       var editableHtml = getAssignedToUserEditableHtml(bugId, textVal);
+      originalValue = $(staticEl).html();
+      var unpadded = originalValue.match(/^(\S+)/);
+      originalValue = unpadded[0];
       $(staticEl).replaceWith(editableHtml);
   }
 
