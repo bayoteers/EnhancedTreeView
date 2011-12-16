@@ -41,10 +41,10 @@ sub handle_removed_dependency {
 sub get_dependency_info {
     my ($tree_dependency_info, $dep_ids) = @_;
 
-    my $dbh    = Bugzilla->dbh;
-    my @ids    = keys %{$dep_ids};
+    my $dbh = Bugzilla->dbh;
+    my @ids = keys %{$dep_ids};
 
-    if(scalar @ids == 0) {
+    if (scalar @ids == 0) {
         return;
     }
 
@@ -55,8 +55,7 @@ sub get_dependency_info {
         }
         $id_str .= "$id";
     }
-    my $query_str =
-        'select 
+    my $query_str = 'select 
             blocked,
             dependson,
             description
@@ -96,9 +95,9 @@ sub update_dependency_info {
 
     my $sth = $dbh->prepare('select blocked from entreeview_dependency_info where blocked = ? and dependson = ?');
     $sth->execute($blocked, $dependson);
-    if($sth->fetchrow_array()) {
+    if ($sth->fetchrow_array()) {
         if ($description eq "") {
-            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);    
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);
         }
         else {
             $dbh->do('UPDATE entreeview_dependency_info SET description = ? WHERE blocked = ? AND dependson = ?', undef, $description, $blocked, $dependson);

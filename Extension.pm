@@ -27,6 +27,7 @@ use base qw(Bugzilla::Extension);
 use Bugzilla::Extension::EnhancedTreeView::Util;
 use Bugzilla::Extension::EnhancedTreeView::BugRPCLib;
 use Bugzilla::Extension::EnhancedTreeView::DependencyHandle;
+use Bugzilla::Error;
 
 our $VERSION = '0.03';
 
@@ -158,4 +159,64 @@ sub template_before_process {
     $vars->{treeviewurl} = "page.cgi?id=EnhancedTreeView.html";
 }
 
+sub bug_end_of_update {
+    my ($self, $args) = @_;
+
+    my ($bug, $old_bug, $timestamp, $changes) = @$args{qw(bug old_bug timestamp changes)};
+
+    my @all_changed_fields = keys %{$changes};
+    if (grep { $_ eq "blocked" } @all_changed_fields) {
+        my $bug_id = $bug->id();
+
+        my $dbh = Bugzilla->dbh;
+        my $sth = $dbh->prepare(
+            'select 
+	    einfo.blocked
+        from 
+	    entreeview_dependency_info einfo 
+        where 
+	    einfo.dependson = ? and 
+        not exists 
+        (select 
+	    null 
+        from 
+	    dependencies dep 
+        where 
+	    dep.blocked = einfo.blocked and 
+	    dep.dependson = ?)'
+                               );
+        $sth->execute($bug_id, $bug_id);
+        my $removed_blocked;
+        while (($removed_blocked) = $sth->fetchrow_array()) {
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $removed_blocked, $bug_id);
+        }
+    }
+
+    if (grep { $_ eq "dependson" } @all_changed_fields) {
+        my $bug_id = $bug->id();
+
+        my $dbh = Bugzilla->dbh;
+        my $sth = $dbh->prepare(
+            'select 
+	    einfo.dependson
+        from 
+	    entreeview_dependency_info einfo 
+        where 
+	    einfo.blocked = ? and 
+        not exists 
+        (select 
+	    null 
+        from 
+	    dependencies dep 
+        where 
+	    dep.dependson = einfo.dependson and 
+	    dep.blocked = ?)'
+                               );
+        $sth->execute($bug_id, $bug_id);
+        my $removed_dependson;
+        while (($removed_dependson) = $sth->fetchrow_array()) {
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $bug_id, $removed_dependson);
+        }
+    }
+}
 __PACKAGE__->NAME;
