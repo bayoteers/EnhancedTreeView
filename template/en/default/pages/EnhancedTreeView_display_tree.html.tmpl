@@ -76,7 +76,7 @@
           [% ELSE %]
             [% description_value = "" %]
           [% END %]
-<td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]' )" onmouseover="description_icon = true;" onmouseout="description_icon = false;">
+            <td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]' )">
             [% IF isroot %]
               <img src="extensions/EnhancedTreeView/web/blanco.png"/>
             [% ELSE %]

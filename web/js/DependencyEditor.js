@@ -20,12 +20,12 @@
   */
 
   var description_editable = false;
-  var description_icon = false;
   var cancelButton = false;
   var saveButton = false;
 
   function makeDependencyInfoEditable(blocked_bugid, dependson_bugid, desc_value) {
       if(description_editable) {
+          makeDescriptionStatic();
           description_editable = false;
           return;
       }
@@ -36,20 +36,42 @@
       description_editable = true;
   }
 
+  $(document).ready(putHandler);
+
+  function putHandler() {
+      //$("*").blur(indicateBlur);
+      $("*").focus(indicateFocus);
+  }
+
+//  function indicateBlur(event) {
+//      var x=event.target; 
+//  }
+
+  function indicateFocus(event) {
+      var x=event.target; 
+      if(x.id != "description" && x.id != "deptypesel") {
+          makeDescriptionStatic();
+      }
+  }
+
   function getEditableDependencyInfoHtml(blocked_bugid, dependson_bugid, desc_value) {
       var str = '<tr id="desc_row">' +
                   '<td colspan="4">' +
                     '<table>' +
                       '<tr>' +
                         '<td>' +
-                          '<textarea rows="4" cols="30" id="description" onblur="makeDescriptionStatic();">' +
+                          '<textarea rows="4" cols="30" id="description">' +
                             desc_value +
-                          '</textarea>' +
+                          '</textarea><br>' +
+                          '<select id="deptypesel">' +
+                            '<option value="0">undefined</option>' +
+                            '<option value="1">blocking</option>' +
+                          '</select>' +
                         '</td>' +
-                        '<td onmouseover="cancelButton = true;" onmouseout="cancelButton = false;">' +
+                        '<td onmouseover="cancelButton = true;" onmouseout="cancelButton = false;" onclick="makeDescriptionStatic();">' +
         	          '<span class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"></span>' +
 	                '</td>' +
-	                '<td onmouseover="saveButton = true;" onmouseout="saveButton = false;">' +
+	                '<td onmouseover="saveButton = true;" onmouseout="saveButton = false;" onclick="makeDescriptionStatic();">' +
 	                  '<span class="ui-icon ui-icon-check" title="save"></span>' +
 	                '</td>' +
                         '<td>' +
@@ -82,9 +104,7 @@
 
       saveButton = false;
       cancelButton = false;
-      if(!description_icon) {
-          description_editable = false;
-      }
+      description_editable = false;
   }
 
   /**
