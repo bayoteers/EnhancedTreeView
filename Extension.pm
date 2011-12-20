@@ -25,6 +25,8 @@ use base qw(Bugzilla::Extension);
 
 # This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
 use Bugzilla::Extension::EnhancedTreeView::Util;
+use Bugzilla::Extension::EnhancedTreeView::BugRPCLib;
+use Bugzilla::Extension::EnhancedTreeView::DependencyHandle;
 use Bugzilla::Error;
 
 our $VERSION = '0.03';
@@ -80,6 +82,42 @@ sub enter_bug_url_fields_cloned {
     }
 }
 
+sub db_schema_abstract_schema {
+    my ($self, $args) = @_;
+
+    my $schema = $args->{schema};
+    $schema->{'entreeview_dependency_info'} = {
+                                                FIELDS => [
+                                                            blocked => {
+                                                                         TYPE       => 'INT3',
+                                                                         NOTNULL    => 1,
+                                                                         REFERENCES => {
+                                                                                         TABLE  => 'bugs',
+                                                                                         COLUMN => 'bug_id',
+                                                                                         DELETE => 'CASCADE'
+                                                                                       }
+                                                                       },
+                                                            dependson => {
+                                                                           TYPE       => 'INT3',
+                                                                           NOTNULL    => 1,
+                                                                           REFERENCES => {
+                                                                                           TABLE  => 'bugs',
+                                                                                           COLUMN => 'bug_id',
+                                                                                           DELETE => 'CASCADE'
+                                                                                         }
+                                                                         },
+                                                            dep_type    => { TYPE => 'INT2' },
+                                                            description => { TYPE => 'varchar(127)' },
+                                                          ],
+                                                INDEXES => [
+                                                             entreeview_dependency_info_unique_idx => {
+                                                                                                        FIELDS => [qw(blocked dependson)],
+                                                                                                        TYPE   => 'UNIQUE'
+                                                                                                      },
+                                                           ],
+                                              };
+}
+
 sub page_before_template {
     my ($self, $args) = @_;
 
@@ -93,7 +131,20 @@ sub page_before_template {
         show_tree_view($vars, $VERSION);
     }
     if ($page eq 'EnhancedTreeView_ajax.html') {
-        ajax_tree_view($vars, $VERSION);
+        my $cgi    = Bugzilla->cgi;
+        my $schema = $cgi->param('schema');
+        if ($schema eq "check_bug_status") {
+            check_bug_status($vars);
+        }
+        elsif ($schema eq "bug") {
+            update_bug_fields_from_json($vars);
+        }
+        elsif ($schema eq "depinfo") {
+            update_dependency_info($vars);
+        }
+        else {
+            ajax_tree_view($vars, $VERSION);
+        }
     }
     #if ($page eq 'EnhancedTreeView_create_bug.html')
     if ($page eq 'EnhancedTreeView_display_tree.html') {
@@ -127,6 +178,67 @@ sub _check_access_right {
 
     if (not $has_access) {
         ThrowUserError('auth_failure', { group => $named_group, action => "access", object => "enhancedtree" });
+    }
+}
+
+sub bug_end_of_update {
+    my ($self, $args) = @_;
+
+    my ($bug, $old_bug, $timestamp, $changes) = @$args{qw(bug old_bug timestamp changes)};
+
+    my @all_changed_fields = keys %{$changes};
+    if (grep { $_ eq "blocked" } @all_changed_fields) {
+        my $bug_id = $bug->id();
+
+        my $dbh = Bugzilla->dbh;
+        my $sth = $dbh->prepare(
+            'select 
+	    einfo.blocked
+        from 
+	    entreeview_dependency_info einfo 
+        where 
+	    einfo.dependson = ? and 
+        not exists 
+        (select 
+	    null 
+        from 
+	    dependencies dep 
+        where 
+	    dep.blocked = einfo.blocked and 
+	    dep.dependson = ?)'
+                               );
+        $sth->execute($bug_id, $bug_id);
+        my $removed_blocked;
+        while (($removed_blocked) = $sth->fetchrow_array()) {
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $removed_blocked, $bug_id);
+        }
+    }
+
+    if (grep { $_ eq "dependson" } @all_changed_fields) {
+        my $bug_id = $bug->id();
+
+        my $dbh = Bugzilla->dbh;
+        my $sth = $dbh->prepare(
+            'select 
+	    einfo.dependson
+        from 
+	    entreeview_dependency_info einfo 
+        where 
+	    einfo.blocked = ? and 
+        not exists 
+        (select 
+	    null 
+        from 
+	    dependencies dep 
+        where 
+	    dep.dependson = einfo.dependson and 
+	    dep.blocked = ?)'
+                               );
+        $sth->execute($bug_id, $bug_id);
+        my $removed_dependson;
+        while (($removed_dependson) = $sth->fetchrow_array()) {
+            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $bug_id, $removed_dependson);
+        }
     }
 }
 __PACKAGE__->NAME;

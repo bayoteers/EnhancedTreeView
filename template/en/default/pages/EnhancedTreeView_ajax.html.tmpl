@@ -20,6 +20,7 @@
   #%]
 { errors : [% IF errors %]true[% ELSE %]false[% END %],
   errormsg: "[% errors %]",
+  ret_value: [% IF ret_value %][% ret_value %][% ELSE %]0[% END %],
   debug_text: "[% debug_text %]"
 }
 [% # json_text %]

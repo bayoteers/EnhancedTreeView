@@ -9,7 +9,7 @@
    implied. See the License for the specific language governing
    rights and limitations under the License.
   
-   The Original Code is the Advanced Treeview Bugzilla Extension.
+   The Original Code is the Enhanced Treeview Bugzilla Extension.
   
    The Initial Developer of the Original Code is "Nokia Corporation"
    Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -17,7 +17,6 @@
   
    Contributor(s):
      Eero Heino <eero.heino@nokia.com>
-     Visa Korhonen <visa.korhonen@symbio.com>
   */
 
 /**
@@ -25,11 +24,21 @@
  */
 var arraied = [];
 
-function expclo(node)
+function doPreToggle(elem, event)
 {
-    $(node).parent().next('ul').toggle();
-    $(node).toggleClass('b_open').toggleClass('b_closed'); 
+    var par_li = elem.parentNode.parentNode.parentNode.parentNode.parentNode;
+    doToggle(par_li, event);
+    $(elem).toggleClass('b_open').toggleClass('b_closed');
 }
+
+// This function did the job almost right.
+//function expclo(node)
+//{
+//    var par = $(node).parent();
+//    var ne_ul = par.find('ul');
+//    ne_ul.toggle();
+//    $(node).toggleClass('b_open').toggleClass('b_closed'); 
+//}
 
 function bindSaveButton() {
 // save
@@ -94,9 +103,9 @@ function ajaxify(id)
     $('#create_'+id).ajaxForm(options);
 }
 
-function toggle_vis(elem, id, arg)
+function t_visibility(id, arg)
 {
-    var obj = $(elem).children(id);
+    var obj = $('#'+id);
     if (arg == 'show')
     {
         obj.show();

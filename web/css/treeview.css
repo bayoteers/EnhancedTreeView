@@ -30,15 +30,15 @@ ul.sortable, ul.sortable ul {
 }
 
 ul.sortable {
-    margin: 4em 0;
+    margin: 0;
 }
 .sortable li {
-    margin: 7px 0 0 0;
+    margin: 0;
     padding: 0;
 }
 
 .sortable li span {
-    padding: 3px;
+    padding: 0px;
     margin: 0;
     cursor: move;
     /*display: inline;*/
@@ -53,6 +53,27 @@ ul.sortable {
 
 ul.tree li {
     white-space: nowrap;
+    background: none;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+ul.tree li a.b {
+    padding-bottom: 10px;
+}
+
+ul.tree li a.b_open {
+    background: url("../../../../skins/standard/dependency-tree/tree-open.png") no-repeat;
+}
+
+ul.tree li a.b_closed {
+    background: url("../../../../skins/standard/dependency-tree/tree-closed.png") no-repeat;
+}
+
+ul.tree li a.no_children { 
+    background: url("../../../../skins/standard/dependency-tree/bug-item.png") no-repeat;
 }
 
 span.hide {
@@ -60,6 +81,10 @@ span.hide {
 }
 span.show {
     display: inline;
+}
+
+.ui-icon {
+    cursor: default;
 }
  
 /*
@@ -80,4 +105,6 @@ input.create {
 .finline select {
     font-size: 9px;
 }
+
+li a:hover {text-decoration:underline;}
 /*.x-form-item {margin-bottom: 20px; border: 2px solid red;}*/
