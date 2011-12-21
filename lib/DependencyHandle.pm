@@ -58,6 +58,7 @@ sub get_dependency_info {
     my $query_str = 'select 
             blocked,
             dependson,
+            dep_type,
             description
         from 
             entreeview_dependency_info 
@@ -65,13 +66,17 @@ sub get_dependency_info {
             dependson in (' . $id_str . ')';
     my $sth = $dbh->prepare($query_str);
     $sth->execute();
-    my ($blocked, $dependson, $description);
+    my ($blocked, $dependson, $dep_type, $description);
 
-    while (($blocked, $dependson, $description) = $sth->fetchrow_array()) {
+    while (($blocked, $dependson, $dep_type, $description) = $sth->fetchrow_array()) {
+        if($dep_type == undef) {
+            $dep_type = 0;
+        }
+        my @info = ($description, $dep_type);
         if (!$tree_dependency_info->{$dependson}) {
             $tree_dependency_info->{$dependson} = {};
         }
-        $tree_dependency_info->{$dependson}->{$blocked} = $description;
+        $tree_dependency_info->{$dependson}->{$blocked} = \@info;
     }
 }
 
@@ -90,17 +95,18 @@ sub update_dependency_info {
     my $content     = $json->allow_nonref->utf8->relaxed->decode($dependency_data);
     my $params      = $content->{params};
     my $description = $params->{description};
+    my $deptype     = $params->{deptype};
     my $blocked     = $params->{blocked};
     my $dependson   = $params->{dependson};
 
     my $sth = $dbh->prepare('select blocked from entreeview_dependency_info where blocked = ? and dependson = ?');
     $sth->execute($blocked, $dependson);
     if ($sth->fetchrow_array()) {
-        if ($description eq "") {
+        if ($description eq "" && $deptype == 0) {
             $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);
         }
         else {
-            $dbh->do('UPDATE entreeview_dependency_info SET description = ? WHERE blocked = ? AND dependson = ?', undef, $description, $blocked, $dependson);
+            $dbh->do('UPDATE entreeview_dependency_info SET description = ?, dep_type = ? WHERE blocked = ? AND dependson = ?', undef, $description, $deptype, $blocked, $dependson);
         }
     }
     else {

@@ -72,18 +72,35 @@
         <tr>
           [% info_on_dependson = dependency_info.$bugid %]
           [% IF info_on_dependson && info_on_dependson.$parentid %]
-            [% description_value = info_on_dependson.$parentid %]
+            [% dep_info = info_on_dependson.$parentid %]
+            [% description_value = dep_info.0 %]
+            [% type_value = dep_info.1 %]
           [% ELSE %]
             [% description_value = "" %]
+            [% type_value = 0 %]
           [% END %]
-            <td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]' )">
+            <td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]', [% type_value %] );">
             [% IF isroot %]
               <img src="extensions/EnhancedTreeView/web/blanco.png"/>
             [% ELSE %]
-              [% IF description_value %]
-                <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% description_value %]"/>
+              [% IF type_value == 2 %]
+                [% IF description_value %]
+                  <img src="extensions/EnhancedTreeView/web/pin_composite.png" title="[% description_value %]"/>
+                [% ELSE %]
+                  <img src="extensions/EnhancedTreeView/web/empty_composite.png"/>
+                [% END %]
+              [% ELSIF type_value == 1 %]
+                [% IF description_value %]
+                  <img src="extensions/EnhancedTreeView/web/pin_blocking.png" title="[% description_value %]"/>
+                [% ELSE %]
+                  <img src="extensions/EnhancedTreeView/web/empty_blocking.png"/>
+                [% END %]
               [% ELSE %]
-                <img src="extensions/EnhancedTreeView/web/empty_dep.png"/>
+                [% IF description_value %]
+                  <img src="extensions/EnhancedTreeView/web/pin_dep.png" title="[% description_value %]"/>
+                [% ELSE %]
+                  <img src="extensions/EnhancedTreeView/web/empty_dep.png"/>
+                [% END %]
               [% END %]
             [% END %]
           </td>
