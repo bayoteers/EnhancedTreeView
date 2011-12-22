@@ -55,6 +55,13 @@ sub get_param_list {
                          choices => \&_get_all_group_names,
                          default => ['admin'],
                       },
+                      {
+                         name    => 'enhancedtreeview_highlighted_item_types',
+                         desc    => 'List of severities of those bugs, that are highlighted in tree view.',
+                         type    => 'm',
+                         choices => [ 'blocker', 'change_request', 'critical', 'feature', 'major', 'minor', 'normal', 'task', 'story' ],
+                         default => [ 'story' ]
+                      },
                      );
     return @param_list;
 }

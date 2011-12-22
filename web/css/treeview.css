@@ -76,6 +76,11 @@ ul.tree li a.no_children {
     background: url("../../../../skins/standard/dependency-tree/bug-item.png") no-repeat;
 }
 
+.notice
+{
+    background-color: #B2FFE5;
+}
+
 span.hide {
     display: none;
 }

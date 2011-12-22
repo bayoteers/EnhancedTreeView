@@ -69,7 +69,7 @@ sub get_dependency_info {
     my ($blocked, $dependson, $dep_type, $description);
 
     while (($blocked, $dependson, $dep_type, $description) = $sth->fetchrow_array()) {
-        if($dep_type == undef) {
+        if ($dep_type == undef) {
             $dep_type = 0;
         }
         my @info = ($description, $dep_type);
@@ -106,7 +106,8 @@ sub update_dependency_info {
             $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);
         }
         else {
-            $dbh->do('UPDATE entreeview_dependency_info SET description = ?, dep_type = ? WHERE blocked = ? AND dependson = ?', undef, $description, $deptype, $blocked, $dependson);
+            $dbh->do('UPDATE entreeview_dependency_info SET description = ?, dep_type = ? WHERE blocked = ? AND dependson = ?',
+                     undef, $description, $deptype, $blocked, $dependson);
         }
     }
     else {
