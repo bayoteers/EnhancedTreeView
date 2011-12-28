@@ -60,7 +60,7 @@ sub get_param_list {
                          desc    => 'List of severities of those bugs, that are highlighted in tree view.',
                          type    => 'm',
                          choices => [ 'blocker', 'change_request', 'critical', 'feature', 'major', 'minor', 'normal', 'task', 'story' ],
-                         default => [ 'story' ]
+                         default => ['story']
                       },
                      );
     return @param_list;
