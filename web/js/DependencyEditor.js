@@ -87,43 +87,39 @@ function makeDescriptionStatic() {
     description_editable = false;
 }
 
+
 /**
  * Function saves value of dependency description into database by doing ajax-call.
  */
-
 function saveDepDescription(newValue, newSelection) {
-    var elem = $("#description");
-    var text = elem[0].value;
-
-    elem = $("#blocked_bugid");
-    var blocked_bugid = elem[0].value;
-    elem = $("#dependson_bugid");
-    var dependson_bugid = elem[0].value;
-
-  var json_params = '{ "method": "Depinfo.update", "params": { "blocked" : "' + blocked_bugid + 
-  '", "dependson" : "' + dependson_bugid + '", "description" : "' + newValue + 
-  '", "deptype" : "' + newSelection + '"}, "id" : 0 }';
-
-  $.post('page.cgi?id=EnhancedTreeView_ajax.html', {
-    schema: 'depinfo',
-    action: 'update',
-    data: json_params
-  }, saveDepResponse, 'text');
+    $.post('page.cgi?id=EnhancedTreeView_ajax.html', {
+        schema: 'depinfo',
+        action: 'update',
+        data: JSON.stringify({
+            id: 0,
+            method: "Depinfo.update",
+            params: {
+                blocked: $('#blocked_bugid').val(),
+                dependson: $('#dependson_bugid').val(),
+                description: newValue,
+                deptype: newSelection
+            }
+        })
+    }, saveDepResponse, 'text');
 }
+
 
 /**
  * Function is call-back function, that is called after succesfull ajax call returns.
  * Ajax call if succesfull, if server responds without throwing exception. Ordered
  * errors are shown in error message. Function shows status of saving to user.
  */
-
 function saveDepResponse(response, status, xhr) {
-  var retObj = eval("(" + response + ")");
-
-  if (retObj.errors) {
-    alert("There are errors: " + retObj.errormsg);
-  } else {
-    window.location.reload();
-    alert("Success");
-  }
+    var retObj = $.parseJson(response);
+    if (retObj.errors) {
+        alert("There are errors: " + retObj.errormsg);
+    } else {
+        alert("Success");
+        window.location.reload();
+    }
 }
