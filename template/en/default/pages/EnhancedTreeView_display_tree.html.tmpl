@@ -79,7 +79,7 @@
             [% description_value = "" %]
             [% type_value = 0 %]
           [% END %]
-            <td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="makeDependencyInfoEditable([% parentid %], [% bugid %], '[% description_value %]', [% type_value %] );">
+            <td class="clickable" id="dep_[% parentid %]_[% bugid %]" onclick="DependencyEditor.show([% parentid %], [% bugid %], '[% description_value %]', [% type_value %] );">
             [% IF isroot %]
               <img src="extensions/EnhancedTreeView/web/blanco.png"/>
             [% ELSE %]
