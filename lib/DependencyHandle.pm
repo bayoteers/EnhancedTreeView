@@ -83,35 +83,29 @@ sub get_dependency_info {
 sub update_dependency_info {
     my ($vars) = @_;
 
-    my $cgi  = Bugzilla->cgi;
-    my $dbh  = Bugzilla->dbh;
+    my $data = Bugzilla->cgi->param('data');
+    if ($data =~ /(.*)/) {
+        $data = $1;    # $data now untainted
+    }
+
     my $json = new JSON::XS;
+    my $content = $json->allow_nonref->utf8->decode($data);
+    my $params = $content->{params};
 
-    my $dependency_data = $cgi->param('data');
+    my $affected = Bugzilla->dbh->do(
+        'UPDATE entreeview_dependency_info '.
+        'SET description = ?, dep_type = ? '.
+        'WHERE blocked = ? AND dependson = ?', undef,
+        $params->{description}, $params->{deptype},
+        $params->{blocked}, $params->{dependson});
 
-    if ($dependency_data =~ /(.*)/) {
-        $dependency_data = $1;    # $data now untainted
-    }
-    my $content     = $json->allow_nonref->utf8->relaxed->decode($dependency_data);
-    my $params      = $content->{params};
-    my $description = $params->{description};
-    my $deptype     = $params->{deptype};
-    my $blocked     = $params->{blocked};
-    my $dependson   = $params->{dependson};
-
-    my $sth = $dbh->prepare('select blocked from entreeview_dependency_info where blocked = ? and dependson = ?');
-    $sth->execute($blocked, $dependson);
-    if ($sth->fetchrow_array()) {
-        if ($description eq "" && $deptype == 0) {
-            $dbh->do('DELETE FROM entreeview_dependency_info WHERE blocked = ? AND dependson = ?', undef, $blocked, $dependson);
-        }
-        else {
-            $dbh->do('UPDATE entreeview_dependency_info SET description = ?, dep_type = ? WHERE blocked = ? AND dependson = ?',
-                     undef, $description, $deptype, $blocked, $dependson);
-        }
-    }
-    else {
-        $dbh->do('INSERT INTO entreeview_dependency_info (description, blocked, dependson) values (?, ?, ?)', undef, $description, $blocked, $dependson);
+    if($affected <= 0) {
+        Bugzilla->dbh->do(
+            'INSERT INTO entreeview_dependency_info'.
+                '(blocked, dependson, description, dep_type)'.
+            'VALUES (?, ?, ?, ?)', undef,
+            $params->{blocked}, $params->{dependson},
+            $params->{description}, $params->{deptype});
     }
 }
 
