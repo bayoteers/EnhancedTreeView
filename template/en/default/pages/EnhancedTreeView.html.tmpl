@@ -19,7 +19,6 @@
   #   Eero Heino <eero.heino@nokia.com>
   #%]
 
-
 [% PROCESS 'global/field-descs.none.tmpl' %]
 
 [% filtered_desc = blocked_tree.$bugid.short_desc FILTER html %]
@@ -44,15 +43,15 @@
   [% select_fields.${field.name} = field %]
 [% END %]
 
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/jquery.form.js"></script>
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/EnhancedTreeView.js?v=[% version %]"></script>
-<link rel="stylesheet" href="extensions/EnhancedTreeView/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
+<script src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-1.5.min.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery-ui-1.8.9.custom.min.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/nestedSortable.1.3.1/jquery.ui.nestedSortable.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/jquery.form.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/EnhancedTreeView.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/TreeViewInlineEditor.js"></script>
+<script src="extensions/EnhancedTreeView/web/js/DependencyEditor.js"></script>
 
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/TreeViewInlineEditor.js"></script>
-<script type="text/JavaScript" src="extensions/EnhancedTreeView/web/js/DependencyEditor.js"></script>
+<link rel="stylesheet" href="extensions/EnhancedTreeView/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
 
 <table style="display: none;">
@@ -94,263 +93,6 @@
 [% PROCESS depthControlToolbar %]
 
 [% PROCESS global/footer.html.tmpl %]
-
-<script type="text/javascript">
-    // Global variables
-    var unsaved_changes = false;
-    var original_tree = [];
-    var edit_mode = false;
-    var sortable_parent = null;
-    var sortable_copy = false;
-    var sticky = [];
-
-    $(document).ready(function() {
-        $('html').click(hide_sticky);
-
-        $('.edit_mode').hide();
-        $('.enable_edit_mode').each(function()
-            {
-                $(this).click(function()
-                    {
-                        edit_mode = !edit_mode;
-                        $('.edit_mode').toggle();
-                        $('.read_mode').toggle();
-                        $( ".sortable" ).sortable( "option", "disabled", false );
-                    });
-            });
-
-
-        $('.loading_element').each(function()
-            {
-                $(this).hide()
-                .ajaxStart(function() {
-                    $(this).show();
-                })
-                .ajaxStop(function() {
-                    $(this).hide();
-                });
-
-            });
-        $('#loadingDiv')
-            .hide()  // hide it initially
-            .ajaxStart(function() {
-                $(this).show();
-            })
-            .ajaxStop(function() {
-                $(this).hide();
-            })
-        ;
-
-        $('.sortable').nestedSortable({
-            disabled: true,
-            disableNesting: 'no-nest',
-            forcePlaceholderSize: true,
-            handle: 'span',
-            helper: 'clone',
-            items: 'li',
-            maxLevels: 30,
-            opacity: .6,
-            placeholder: 'placeholder',
-            revert: 250,
-            tabSize: 25,
-            tolerance: 'pointer',
-            toleranceElement: '> span',
-            listType: 'ul',
-
-            start: function (event, ui)
-                {
-                    sortable_parent = ui.item.parents('li');
-                    // copy instead of move
-                    if (event.ctrlKey == true)
-                    {
-                        //ui.item.show();
-                        ui.item.clone().insertAfter(ui.item).show();
-                        sortable_copy = true;
-                    }
-                },
-
-            stop: function (event, ui)
-                {
-                    var done = false;
-                    var tree = $(this);
-                    var reverted = false;
-                    function revert()
-                    {
-                        alert('This would cause a dependency loop');
-                        tree.sortable('cancel');
-                        reverted = true;
-                    }
-                    var tree_bug_ids = [];
-                    // dependency loop detection
-                    ui.item.parents('li').each(function ()
-                        {
-                            // detect in the same tree
-                            var parent_li = $(this);
-                            // bug ids above inserted element in the target tree.
-                            // used to check reverse dependency in other trees
-                            tree_bug_ids.push(parent_li.attr('id'));
-                            ui.item.parent().find('li').each(function ()
-                                {
-                                    if ($(this).attr('id') == parent_li.attr('id'))
-                                    {
-                                        revert();
-                                        done = true;
-                                        return false;
-                                    }
-                                });
-                            if (done)
-                            {
-                                return false;
-                            }
-
-                            // at the top level
-                            if (parent_li.parent().closest('li').attr('id') == 'foo_0')
-                            {
-                                var done = false;
-
-                                var moved_bug_ids = [ui.item.attr('id')];
-                                ui.item.find('li').each(function ()
-                                {
-                                   moved_bug_ids.push($(this).attr('id'));
-                                });
-
-                                // detect other trees
-                                parent_li.siblings().each(function ()
-                                    {
-                                        var found_target_tree_bug = false;
-                                        var found_target_bug = false;
-                                        function check_bug(bug_id)
-                                        {
-                                            if ($.inArray(bug_id, tree_bug_ids) > -1)
-                                            {
-                                                found_target_tree_bug = true;
-                                            }
-                                            if ($.inArray(bug_id, moved_bug_ids) > -1)
-                                            {
-                                                found_target_bug = true;
-                                            }
-                                        }
-
-                                        check_bug($(this).attr('id'));
-                                        $(this).find('li').each(function ()
-                                            {
-                                                check_bug($(this).attr('id'));
-                                                if (found_target_bug && found_target_tree_bug)
-                                                {
-                                                    revert();
-                                                    done = true;
-                                                    return false;
-                                                }
-
-                                            });
-                                        if (done)
-                                        {
-                                            return false;
-                                        }
-
-                                    });
-                            }
-                        });
-
-                    parent_li = ui.item.parents('li');
-                    p_id = parent_li.attr('id');
-
-                    if (!reverted)
-                    {
-                        $('.cancel_edit_mode').each(function ()
-                        {
-                            $(this).removeAttr('disabled');
-                        });
-                        $('.save_tree').each(function ()
-                        {
-                            $(this).removeAttr('disabled');
-                        });
-                        // replace the old parent with the new one for the clone link in all instances of this moved bug
-                        $('li[id^='+ui.item.attr('id')+']').each(function ()
-                        {
-                            var clone_link = $(this).find('.clone_link');
-                            // disabling link until saved
-                            if (clone_link.attr('href') != undefined)
-                            {
-                                var href = clone_link.attr('href');
-                                clone_link.removeAttr('href');
-                            } else
-                            {
-                                var href = clone_link.attr('hrefnew');
-                            }
-                            var sortable_parent_id = sortable_parent.attr('id').replace('bug_', '');
-                            var blocked_field = href.match('blocked=([0-9,]+)')
-                            if (p_id == 'foo_0' || p_id == 'root' || p_id == undefined)
-                            {
-                                p_id = '';
-                            } else
-                            {
-                                p_id = p_id.replace('bug_', '');
-                            }
-                            if (blocked_field)
-                            {
-                                blocked_field = blocked_field[0];
-                                // copying so no need to overwrite the previous blocked
-                                if (sortable_copy)
-                                {
-                                    var new_blocked_field = blocked_field + p_id + ',';
-                                } else
-                                {
-                                    var new_blocked_field = blocked_field.replace(sortable_parent_id, p_id);
-                                }
-                                new_blocked_field = new_blocked_field.replace(',,', ',');
-                                clone_link.attr('hrefnew', href.replace(blocked_field, new_blocked_field));
-                            // didn't have a real parent until now
-                            } else if (href.match('blocked=') && p_id != 'foo_0' && p_id != 'root')
-                            {
-                                clone_link.attr('hrefnew', href.replace('blocked=', 'blocked='+p_id));
-                            }
-                            if(sortable_parent_id != p_id && (sortable_parent_id != 'foo_0' || p_id != ''))
-                            {
-                                //alert('sortable_parent_id: '+sortable_parent_id+' p_id:'+p_id);
-                                unsaved_changes = true;
-                            }
-                        });
-                    }
-
-                    sortable_copy = false;
-
-                    item_a_node = $(parent_li.find('span').find('a').get(0));
-                    if (p_id && p_id != 'foo_0' && p_id != 'root')
-                    {
-                        p_id = p_id.split('_')[1];
-                        item_a_node.attr('onclick', 'expclo(this);');
-                        item_a_node.attr('class', 'b b_open');
-                    }
-                }
-        });
-    original_tree = $('ul.sortable').nestedSortable('toArray', {startDepthCount: 0});
-
-//    $('li [class=bug]').each(function ()
-//    {
-//        var id = $(this).attr('id').replace('bug_', '');
-//        //ajaxify(id);
-//    });
-
-    bindSaveButton();
-
-    $(window).unload(
-        function() 
-        {
-            if(unsaved_changes)
-            {
-                if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
-                {
-                    $('.save_tree').each(function ()
-                    {
-                        $(this).click();
-                    });
-                }
-            } 
-        } 
-    );
-});
-</script>
 
 [%###########################################################################%]
 [%# Block for depth control toolbar                                         #%]
