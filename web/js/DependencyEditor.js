@@ -53,36 +53,13 @@
       }
   }
 
-  function getEditableDependencyInfoHtml(blocked_bugid, dependson_bugid, desc_value) {
-      var str = '<tr id="desc_row">' +
-                  '<td colspan="4">' +
-                    '<table>' +
-                      '<tr>' +
-                        '<td>' +
-                          '<textarea rows="4" cols="30" id="description">' +
-                            desc_value +
-                          '</textarea><br>' +
-                          '<select id="deptypesel">' +
-                            '<option value="0">undefined</option>' +
-                            '<option value="1">blocking</option>' +
-                            '<option value="2">composite</option>' +
-                          '</select>' +
-                        '</td>' +
-                        '<td onmouseover="cancelButton = true;" onmouseout="cancelButton = false;" onclick="makeDescriptionStatic();">' +
-        	          '<span class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"></span>' +
-	                '</td>' +
-	                '<td onmouseover="saveButton = true;" onmouseout="saveButton = false;" onclick="makeDescriptionStatic();">' +
-	                  '<span class="ui-icon ui-icon-check" title="save"></span>' +
-	                '</td>' +
-                        '<td>' +
-                           '<input type="hidden" id="blocked_bugid" value="' + blocked_bugid + '"/>' +
-                           '<input type="hidden" id="dependson_bugid" value="' + dependson_bugid + '"/>' +
-	                '</td>' +
-                      '</tr>' +
-                   '</table>' +
-                 '</td>' +
-               '</tr>';
-      return str;
+  function getEditableDependencyInfoHtml(blocked_bugid, dependson_bugid, desc_value)
+  {
+      var template = $('#desc_row_template').clone();
+      $('#description', template).val(desc_value);
+      $('#blocked_bugid', template).val(blocked_bugid);
+      $('#dependson_bugid', template).val(dependson_bugid);
+      return template;
   }
 
   function makeDescriptionStatic() {
