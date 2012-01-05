@@ -23,6 +23,8 @@ package Bugzilla::Extension::EnhancedTreeView;
 use strict;
 use base qw(Bugzilla::Extension);
 
+use JSON::PP;
+
 # This code for this is in ./extensions/EnhancedTreeView/lib/Util.pm
 use Bugzilla::Extension::EnhancedTreeView::Util;
 use Bugzilla::Extension::EnhancedTreeView::BugRPCLib;
@@ -118,6 +120,19 @@ sub db_schema_abstract_schema {
                                               };
 }
 
+
+sub fix_json {
+    my $vars = shift;
+    return if $vars->{json_text};
+    $vars->{json_text} = JSON->new->utf8->pretty->encode({
+        errors => int($vars->{errors}),
+        errormsg => $vars->{errors},
+        ret_value => $vars->{ret_value},
+        debug_text => $vars->{debug_text}
+    });
+}
+
+
 sub page_before_template {
     my ($self, $args) = @_;
 
@@ -145,6 +160,7 @@ sub page_before_template {
         else {
             ajax_tree_view($vars, $VERSION);
         }
+        fix_json($vars);
     }
     #if ($page eq 'EnhancedTreeView_create_bug.html')
     if ($page eq 'EnhancedTreeView_display_tree.html') {
