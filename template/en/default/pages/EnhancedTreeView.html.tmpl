@@ -54,28 +54,27 @@
 <link rel="stylesheet" href="extensions/EnhancedTreeView/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
 
-<table style="display: none;">
+<table style="display: none;"> <!-- required to satisfy parser. -->
 <tr id="desc_row_template">
 <td colspan="4">
     <table>
     <tr>
     <td>
-        <textarea rows="4" cols="30" id="description"></textarea><br>
-        <select id="deptypesel">
+        <textarea rows="4" cols="30" id="description"
+            title="Description of this dependency"></textarea><br>
+        <select id="deptypesel" title="Dependency type">
           <option value="0">undefined</option>
           <option value="1">blocking</option>
           <option value="2">composite</option>
         </select>
     </td>
     <td>
-        <span style="cursor: auto" class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"></span>
+        <span style="cursor: auto" class="ui-icon ui-icon-arrowreturnthick-1-w"
+            title="cancel"></span>
     </td>
     <td>
-        <span style="cursor: auto" class="ui-icon ui-icon-check" title="save"></span>
-    </td>
-    <td>
-        <input type="hidden" id="blocked_bugid">
-        <input type="hidden" id="dependson_bugid">
+        <span style="cursor: auto" class="ui-icon ui-icon-check"
+            title="save"></span>
     </td>
     </tr>
     </table>

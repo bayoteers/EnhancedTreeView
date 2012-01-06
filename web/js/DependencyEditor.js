@@ -58,8 +58,6 @@ var DependencyEditor = {
 
         $('#deptypesel', template).val(state.dep_type);
         $('#description', template).val(state.description);
-        $('#blocked_bugid', template).val(state.blocked);
-        $('#dependson_bugid', template).val(state.dependson);
         $('span[title=cancel]', template).click(this.hide.bind(this));
         $('span[title=save]', template).click(this.save.bind(this));
         state.template = template;
