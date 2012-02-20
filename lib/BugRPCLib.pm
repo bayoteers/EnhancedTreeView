@@ -72,9 +72,9 @@ sub update_bug_fields_from_json {
         if (grep { $_ eq "comment" } @bug_field_names) {
             $comment_value = $bug_fields->{"comment"};
         }
-        my @bug_field_names = grep { $_ ne "comment" } @bug_field_names;
+        @bug_field_names = grep { $_ ne "comment" } @bug_field_names;
 
-        my $field_name = @bug_field_names[0];
+        my $field_name = $bug_field_names[0];
         $field_value = $bug_fields->{$field_name};
         update_bug_field($vars, $bug_id, $field_name, $field_value, $comment_value);
     }
